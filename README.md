@@ -39,32 +39,148 @@ commit-chronicle/
 - JDK 8 이상 (MCP 기능의 경우 JDK 17 이상)
 - OpenAI API 키
 
+### 모듈별 호환성 안내
+
+- **core 모듈**: Java 8 이상 지원 (기본 AI 요약 기능)
+- **mcp-extension 모듈**: Java 17 이상 필요 (고급 MCP 기능)
+- **cli 모듈**: Java 8 이상 지원
+- **ide-plugin-intellij 모듈**: Java 11 이상 지원
+
 ### CLI 설치 및 사용
+
+#### 프로젝트 빌드
+
+먼저 프로젝트를 빌드합니다:
+
+```bash
+./gradlew build
+```
 
 #### Gradle로 직접 실행
 
 ```bash
+# 기본 요약 기능 실행 (Java 8 이상)
 ./gradlew :cli:run --args="--path /path/to/repo --key YOUR_API_KEY"
+
+# MCP 기능 활성화 (Java 17 이상 필요)
+./gradlew :cli:run --args="--path /path/to/repo --key YOUR_API_KEY --mcp"
 ```
 
-#### CLI 명령어
+#### CLI 명령어 상세 옵션
 
 ```bash
 # 커밋 요약 생성
-java -jar commitchronicle-cli.jar --path /path/to/repo --key YOUR_API_KEY
+./gradlew :cli:run --args="--path /path/to/repo --key YOUR_API_KEY [--mcp] [-d DAYS] [-l LIMIT]"
 
 # PR 초안 생성
-java -jar commitchronicle-cli.jar pr --path /path/to/repo --key YOUR_API_KEY --title "PR 제목"
+./gradlew :cli:run --args="pr --path /path/to/repo --key YOUR_API_KEY [--mcp] [-t TITLE] [--template TEMPLATE_PATH]"
 
 # 변경 로그 생성
-java -jar commitchronicle-cli.jar changelog --path /path/to/repo --key YOUR_API_KEY
+./gradlew :cli:run --args="changelog --path /path/to/repo --key YOUR_API_KEY [--mcp] [--group] [--template TEMPLATE_PATH]"
+```
+
+#### 배포 버전 실행
+
+```bash
+# 배포된 JAR 파일 생성
+./gradlew :cli:shadowJar
+
+# 생성된 JAR 실행
+java -jar cli/build/libs/commitchronicle-cli-0.1.0-all.jar --path /path/to/repo --key YOUR_API_KEY
 ```
 
 ### IntelliJ 플러그인 설치 및 사용
 
-1. IntelliJ IDEA에서 플러그인 설치
-2. `Tools > CommitChronicle` 메뉴에서 원하는 기능 실행
-3. OpenAI API 키 입력 후 실행
+1. IntelliJ IDEA에서 플러그인 빌드:
+   ```bash
+   ./gradlew :ide-plugin-intellij:buildPlugin
+   ```
+
+2. 빌드된 플러그인(ide-plugin-intellij/build/distributions/CommitChronicle-*.zip) 설치
+3. `Tools > CommitChronicle` 메뉴에서 원하는 기능 실행
+4. OpenAI API 키 입력 후 실행
+
+## 테스트 및 모듈 검증
+
+### 모듈별 테스트 실행
+
+```bash
+# core 모듈 테스트 (Java 8 환경)
+./gradlew :core:test
+
+# mcp-extension 모듈 테스트 (Java 17 환경)
+./gradlew :mcp-extension:test
+
+# cli 모듈 테스트
+./gradlew :cli:test
+```
+
+### 성능 테스트
+
+대량의 커밋을 분석할 때의 성능을 테스트합니다:
+
+```bash
+./gradlew :cli:run --args="--path /path/to/large/repo --key YOUR_API_KEY --limit 1000"
+```
+
+## 프로젝트 확장 가이드
+
+### 새로운 AI 요약 엔진 추가
+
+1. `AISummarizer` 인터페이스 구현:
+
+```kotlin
+// core/src/main/kotlin/com/commitchronicle/ai/CustomAISummarizer.kt
+package com.commitchronicle.ai
+
+import com.commitchronicle.model.Commit
+
+class CustomAISummarizer(private val apiKey: String) : AISummarizer {
+    override suspend fun summarize(commits: List<Commit>): String {
+        // 커스텀 구현
+    }
+    
+    override suspend fun generatePRDraft(commits: List<Commit>, title: String?): String {
+        // 커스텀 구현
+    }
+    
+    override suspend fun generateChangelog(commits: List<Commit>, groupByType: Boolean): String {
+        // 커스텀 구현
+    }
+}
+```
+
+2. `AISummarizerFactory`에 새 구현체 등록:
+
+```kotlin
+// AISummarizerFactory.kt 업데이트
+fun create(apiKey: String, useMcp: Boolean, engine: String = "openai"): AISummarizer {
+    return when (engine) {
+        "custom" -> CustomAISummarizer(apiKey)
+        "mcp" -> if (useMcp) loadMcpSummarizer(apiKey) else OpenAISummarizer(apiKey)
+        else -> OpenAISummarizer(apiKey)
+    }
+}
+```
+
+### 새로운 템플릿 엔진 추가
+
+`TemplateEngine` 인터페이스를 구현하여 새로운 템플릿 엔진을 추가할 수 있습니다:
+
+```kotlin
+// core/src/main/kotlin/com/commitchronicle/template/CustomTemplateEngine.kt
+package com.commitchronicle.template
+
+class CustomTemplateEngine : TemplateEngine {
+    override fun render(templatePath: String, data: Map<String, Any>): String {
+        // 커스텀 템플릿 구현
+    }
+    
+    override fun renderString(templateContent: String, data: Map<String, Any>): String {
+        // 커스텀 구현
+    }
+}
+```
 
 ## 개발 참여
 
