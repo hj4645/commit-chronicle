@@ -12,7 +12,8 @@ dependencies {
 
 intellij {
     version.set("2023.3")
-//    plugins.set(listOf("git4idea"))
+    type.set("IC")
+    plugins.set(listOf("Git4Idea"))
 }
 
 tasks.test {

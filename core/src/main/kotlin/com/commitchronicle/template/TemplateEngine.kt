@@ -1,4 +1,4 @@
-package com.commitchronicle.core.template
+package com.commitchronicle.template
 
 /**
  * 템플릿 엔진 인터페이스

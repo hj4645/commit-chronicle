@@ -15,6 +15,16 @@ tasks.test {
     useJUnitPlatform()
 }
 
-//kotlin {
-//    jvmToolchain(17)
-//}
+kotlin {
+    jvmToolchain(17)
+}
+
+// Java 17 기능 활용을 위한 추가 설정
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions {
+        jvmTarget = "17"
+        apiVersion = "1.8"
+        languageVersion = "1.8"
+        freeCompilerArgs = listOf("-Xjsr305=strict")
+    }
+}

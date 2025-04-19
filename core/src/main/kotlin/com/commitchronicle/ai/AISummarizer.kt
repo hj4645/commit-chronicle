@@ -1,6 +1,6 @@
-package com.commitchronicle.core.ai
+package com.commitchronicle.ai
 
-import com.commitchronicle.core.model.Commit
+import com.commitchronicle.model.Commit
 
 /**
  * 커밋 정보를 기반으로 요약을 생성하는 인터페이스

@@ -1,7 +1,8 @@
-package com.commitchronicle.core.template
+package com.commitchronicle.template
 
 import java.io.File
 import java.util.regex.Pattern
+import kotlin.collections.get
 
 /**
  * 간단한 마크다운 기반 템플릿 엔진 구현

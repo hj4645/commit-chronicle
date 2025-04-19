@@ -1,4 +1,6 @@
-package com.commitchronicle.core.ai
+package com.commitchronicle.ai
+
+import kotlin.reflect.full.primaryConstructor
 
 /**
  * AISummarizer 구현체를 생성하는 팩토리 클래스
@@ -15,10 +17,17 @@ object AISummarizerFactory {
     fun create(apiKey: String, useMcp: Boolean): AISummarizer {
         return if (useMcp) {
             try {
-                // MCP 구현체를 동적으로 로드
-                val mcpClass = Class.forName("com.commitchronicle.mcp.ai.McpSummarizer")
-                val constructor = mcpClass.getConstructor(String::class.java)
-                constructor.newInstance(apiKey) as AISummarizer
+                // 클래스 이름으로 인스턴스 로드
+                val mcpClassName = "com.commitchronicle.ai.McpSummarizer"
+                val classLoader = this.javaClass.classLoader
+                val mcpJavaClass = classLoader.loadClass(mcpClassName)
+                val mcpClass = mcpJavaClass.kotlin
+                
+                // 생성자 가져와서 인스턴스 생성
+                val constructor = mcpClass.primaryConstructor
+                    ?: throw IllegalStateException("McpSummarizer에 기본 생성자가 없습니다.")
+                
+                constructor.call(apiKey) as AISummarizer
             } catch (e: Exception) {
                 // MCP 로드 실패 시 기본 구현체로 폴백
                 OpenAISummarizer(apiKey)

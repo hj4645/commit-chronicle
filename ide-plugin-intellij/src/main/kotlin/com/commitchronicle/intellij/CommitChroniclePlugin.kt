@@ -1,7 +1,7 @@
 package com.commitchronicle.intellij
 
-import com.commitchronicle.core.ai.AISummarizerFactory
-import com.commitchronicle.core.git.JGitAnalyzer
+import com.commitchronicle.ai.AISummarizerFactory
+import com.commitchronicle.git.JGitAnalyzer
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
@@ -13,7 +13,6 @@ import git4idea.repo.GitRepositoryManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
 
 /**
@@ -48,7 +47,7 @@ class SummarizeCommitsAction : AnAction("커밋 요약 생성") {
             return
         }
         
-        val scope = CoroutineScope(Dispatchers.Swing)
+        val scope = CoroutineScope(Dispatchers.Main)
         scope.launch {
             try {
                 val gitAnalyzer = JGitAnalyzer(repoPath)
@@ -57,15 +56,15 @@ class SummarizeCommitsAction : AnAction("커밋 요약 생성") {
                 withContext(Dispatchers.IO) {
                     val commits = gitAnalyzer.getCommits(7) // 최근 7일간의 커밋
                     if (commits.isEmpty()) {
-                        withContext(Dispatchers.Swing) {
-                            Messages.showInfoDialog(project, "최근 7일간의 커밋이 없습니다.", "CommitChronicle")
+                        withContext(Dispatchers.Main) {
+                            Messages.showInfoMessage(project, "최근 7일간의 커밋이 없습니다.", "CommitChronicle")
                         }
                         return@withContext
                     }
                     
                     val summary = aiSummarizer.summarize(commits)
                     
-                    withContext(Dispatchers.Swing) {
+                    withContext(Dispatchers.Main) {
                         showNotification(
                             project,
                             "커밋 요약",
@@ -75,7 +74,7 @@ class SummarizeCommitsAction : AnAction("커밋 요약 생성") {
                     }
                 }
             } catch (ex: Exception) {
-                withContext(Dispatchers.Swing) {
+                withContext(Dispatchers.Main) {
                     Messages.showErrorDialog(
                         project,
                         "요약 생성 중 오류가 발생했습니다: ${ex.message}",
@@ -116,7 +115,7 @@ class GeneratePRAction : AnAction("PR 초안 생성") {
             return
         }
         
-        val scope = CoroutineScope(Dispatchers.Swing)
+        val scope = CoroutineScope(Dispatchers.Main)
         scope.launch {
             try {
                 val gitAnalyzer = JGitAnalyzer(repoPath)
@@ -125,15 +124,15 @@ class GeneratePRAction : AnAction("PR 초안 생성") {
                 withContext(Dispatchers.IO) {
                     val commits = gitAnalyzer.getCommits(7) // 최근 7일간의 커밋
                     if (commits.isEmpty()) {
-                        withContext(Dispatchers.Swing) {
-                            Messages.showInfoDialog(project, "최근 7일간의 커밋이 없습니다.", "CommitChronicle")
+                        withContext(Dispatchers.Main) {
+                            Messages.showInfoMessage(project, "최근 7일간의 커밋이 없습니다.", "CommitChronicle")
                         }
                         return@withContext
                     }
                     
                     val prDraft = aiSummarizer.generatePRDraft(commits, title)
                     
-                    withContext(Dispatchers.Swing) {
+                    withContext(Dispatchers.Main) {
                         showNotification(
                             project,
                             "PR 초안",
@@ -143,7 +142,7 @@ class GeneratePRAction : AnAction("PR 초안 생성") {
                     }
                 }
             } catch (ex: Exception) {
-                withContext(Dispatchers.Swing) {
+                withContext(Dispatchers.Main) {
                     Messages.showErrorDialog(
                         project,
                         "PR 초안 생성 중 오류가 발생했습니다: ${ex.message}",
@@ -177,7 +176,7 @@ class GenerateChangelogAction : AnAction("변경 로그 생성") {
             return
         }
         
-        val scope = CoroutineScope(Dispatchers.Swing)
+        val scope = CoroutineScope(Dispatchers.Main)
         scope.launch {
             try {
                 val gitAnalyzer = JGitAnalyzer(repoPath)
@@ -186,15 +185,15 @@ class GenerateChangelogAction : AnAction("변경 로그 생성") {
                 withContext(Dispatchers.IO) {
                     val commits = gitAnalyzer.getCommits(30) // 최근 30일간의 커밋
                     if (commits.isEmpty()) {
-                        withContext(Dispatchers.Swing) {
-                            Messages.showInfoDialog(project, "최근 30일간의 커밋이 없습니다.", "CommitChronicle")
+                        withContext(Dispatchers.Main) {
+                            Messages.showInfoMessage(project, "최근 30일간의 커밋이 없습니다.", "CommitChronicle")
                         }
                         return@withContext
                     }
                     
                     val changelog = aiSummarizer.generateChangelog(commits, true)
                     
-                    withContext(Dispatchers.Swing) {
+                    withContext(Dispatchers.Main) {
                         showNotification(
                             project,
                             "변경 로그",
@@ -204,7 +203,7 @@ class GenerateChangelogAction : AnAction("변경 로그 생성") {
                     }
                 }
             } catch (ex: Exception) {
-                withContext(Dispatchers.Swing) {
+                withContext(Dispatchers.Main) {
                     Messages.showErrorDialog(
                         project,
                         "변경 로그 생성 중 오류가 발생했습니다: ${ex.message}",

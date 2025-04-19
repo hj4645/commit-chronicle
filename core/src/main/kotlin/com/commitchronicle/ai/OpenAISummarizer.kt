@@ -1,18 +1,27 @@
-package com.commitchronicle.mcp.ai
+package com.commitchronicle.ai
 
-import com.commitchronicle.core.ai.AISummarizer
-import com.commitchronicle.core.model.Commit
-import io.modelcontextprotocol.client.Client
-import io.modelcontextprotocol.client.transport.HttpServerSentEventsClientTransport
+import com.commitchronicle.model.Commit
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import io.ktor.serialization.jackson.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.format.DateTimeFormatter
 
 /**
- * MCP (Model Context Protocol)를 사용하여 커밋 요약을 생성하는 AISummarizer 구현체
- * JDK 17 이상에서만 동작합니다.
+ * OpenAI API를 사용하여 커밋 요약을 생성하는 AISummarizer 구현체
  */
-class McpSummarizer(private val apiKey: String) : AISummarizer {
+class OpenAISummarizer(private val apiKey: String) : AISummarizer {
+    private val httpClient = HttpClient(CIO) {
+        install(ContentNegotiation) {
+            jackson()
+        }
+    }
+    
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     
     override suspend fun summarize(commits: List<Commit>): String {
@@ -31,7 +40,7 @@ class McpSummarizer(private val apiKey: String) : AISummarizer {
             2. 기술적 세부 사항 (필요한 경우)
         """.trimIndent()
         
-        return callMcpModel(prompt)
+        return callOpenAI(prompt)
     }
     
     override suspend fun generatePRDraft(commits: List<Commit>, title: String?): String {
@@ -61,7 +70,7 @@ class McpSummarizer(private val apiKey: String) : AISummarizer {
             // 이 변경 사항을 테스트하는 방법
         """.trimIndent()
         
-        return callMcpModel(prompt)
+        return callOpenAI(prompt)
     }
     
     override suspend fun generateChangelog(commits: List<Commit>, groupByType: Boolean): String {
@@ -89,7 +98,7 @@ class McpSummarizer(private val apiKey: String) : AISummarizer {
             // 주요 변경 사항을 Markdown 형식으로 정리
         """.trimIndent()
         
-        return callMcpModel(prompt)
+        return callOpenAI(prompt)
     }
     
     private fun formatCommitsForPrompt(commits: List<Commit>): String {
@@ -110,41 +119,46 @@ class McpSummarizer(private val apiKey: String) : AISummarizer {
         }
     }
     
-    private suspend fun callMcpModel(prompt: String): String = withContext(Dispatchers.IO) {
+    private suspend fun callOpenAI(prompt: String): String = withContext(Dispatchers.IO) {
         try {
-            val client = Client(
-                clientInfo = Client.ClientInfo(
-                    name = "CommitChronicle",
-                    version = "1.0.0"
-                )
-            )
-            
-            val transport = HttpServerSentEventsClientTransport(
-                url = "https://api.openai.com/v1/chat/completions",
-                headers = mapOf("Authorization" to "Bearer $apiKey")
-            )
-            
-            client.connect(transport).use { connection ->
-                val request = Client.CreateCompletionRequest(
+            val response: OpenAIResponse = httpClient.post("https://api.openai.com/v1/chat/completions") {
+                header("Authorization", "Bearer $apiKey")
+                contentType(ContentType.Application.Json)
+                setBody(OpenAIRequest(
                     model = "gpt-4-turbo-preview",
                     messages = listOf(
-                        Client.Message(
-                            role = "system",
-                            content = "당신은 개발자를 위한 유용한 요약과 문서를 제공하는 AI 조수입니다."
-                        ),
-                        Client.Message(
-                            role = "user",
-                            content = prompt
-                        )
+                        Message(role = "system", content = "당신은 개발자를 위한 유용한 요약과 문서를 제공하는 AI 조수입니다."),
+                        Message(role = "user", content = prompt)
                     ),
                     temperature = 0.7
-                )
-                
-                val response = client.createCompletion(request)
-                return@withContext response.choices.firstOrNull()?.message?.content ?: "응답을 생성할 수 없습니다."
-            }
+                ))
+            }.body()
+            
+            return@withContext response.choices.firstOrNull()?.message?.content ?: "응답을 생성할 수 없습니다."
         } catch (e: Exception) {
-            return@withContext "MCP API 호출 중 오류 발생: ${e.message}"
+            return@withContext "OpenAI API 호출 중 오류 발생: ${e.message}"
         }
     }
+    
+    // OpenAI API 요청 및 응답 모델
+    data class OpenAIRequest(
+        val model: String,
+        val messages: List<Message>,
+        val temperature: Double = 0.7
+    )
+    
+    data class OpenAIResponse(
+        val id: String,
+        val choices: List<Choice>
+    )
+    
+    data class Message(
+        val role: String,
+        val content: String
+    )
+    
+    data class Choice(
+        val index: Int,
+        val message: Message
+    )
 } 
