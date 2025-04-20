@@ -20,8 +20,6 @@ fun main(args: Array<String>) {
     try {
         command.parse(args)
     } catch (e: com.github.ajalt.clikt.core.PrintHelpMessage) {
-        // This is expected when help is requested or no arguments are provided
-        // The help message is already printed by Clikt, so we just exit normally
         return
     }
 }
