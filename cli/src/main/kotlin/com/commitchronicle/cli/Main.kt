@@ -51,9 +51,6 @@ class Summarize : CliktCommand() {
     private val apiKey by option("-k", "--key", help = "OpenAI API 키")
         .required()
 
-    private val useMcp by option("--mcp", help = "MCP를 사용할지 여부 (JDK 17+ 필요)")
-        .flag(default = false)
-
     private val outputFile by option("-o", "--output", help = "출력 파일 경로 (지정하지 않으면 콘솔에 출력)")
 
     override fun run() {
@@ -61,7 +58,7 @@ class Summarize : CliktCommand() {
             echo("커밋 요약 생성 중...")
 
             val gitAnalyzer = JGitAnalyzer(repoPath)
-            val aiSummarizer = AISummarizerFactory.create(apiKey, useMcp)
+            val aiSummarizer = AISummarizerFactory.create(apiKey)
 
             val commits = when {
                 fromCommit != null -> {
@@ -113,9 +110,6 @@ class GeneratePR : CliktCommand(name = "pr") {
     private val apiKey by option("-k", "--key", help = "OpenAI API 키")
         .required()
 
-    private val useMcp by option("--mcp", help = "MCP를 사용할지 여부 (JDK 17+ 필요)")
-        .flag(default = false)
-
     private val outputFile by option("-o", "--output", help = "출력 파일 경로 (지정하지 않으면 콘솔에 출력)")
 
     private val templatePath by option("--template", help = "사용자 정의 템플릿 파일 경로")
@@ -125,7 +119,7 @@ class GeneratePR : CliktCommand(name = "pr") {
             echo("PR 초안 생성 중...")
 
             val gitAnalyzer = JGitAnalyzer(repoPath)
-            val aiSummarizer = AISummarizerFactory.create(apiKey, useMcp)
+            val aiSummarizer = AISummarizerFactory.create(apiKey)
 
             val commits = when {
                 fromCommit != null -> {
@@ -188,9 +182,6 @@ class GenerateChangelog : CliktCommand(name = "changelog") {
     private val apiKey by option("-k", "--key", help = "OpenAI API 키")
         .required()
 
-    private val useMcp by option("--mcp", help = "MCP를 사용할지 여부 (JDK 17+ 필요)")
-        .flag(default = false)
-
     private val outputFile by option("-o", "--output", help = "출력 파일 경로 (지정하지 않으면 콘솔에 출력)")
 
     private val templatePath by option("--template", help = "사용자 정의 템플릿 파일 경로")
@@ -203,7 +194,7 @@ class GenerateChangelog : CliktCommand(name = "changelog") {
             echo("변경 로그 생성 중...")
 
             val gitAnalyzer = JGitAnalyzer(repoPath)
-            val aiSummarizer = AISummarizerFactory.create(apiKey, useMcp)
+            val aiSummarizer = AISummarizerFactory.create(apiKey)
 
             val commits = when {
                 fromCommit != null -> {

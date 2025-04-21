@@ -10,7 +10,6 @@ CommitChronicle는 Git 커밋 히스토리와 AI를 활용해 Pull Request 초�
 - 변경 로그 자동 생성
 - 사용자 정의 템플릿 지원
 - IntelliJ IDEA 플러그인 지원
-- 낮은 버전에서는 기본 AI 요약 기능 사용, 높은 버전에서는 MCP 지원
 
 ## 프로젝트 구조
 
@@ -18,14 +17,10 @@ CommitChronicle는 Git 커밋 히스토리와 AI를 활용해 Pull Request 초�
 commit-chronicle/
 ├── core/                      # 핵심 라이브러리 (공통 인터페이스 및 기본 구현)
 │   ├── src/main/kotlin/
-│   │   ├── git/              # Git 분석 모듈
-│   │   ├── ai/               # AI 요약 모듈 (버전별 구현 포함)
+│   │   ├── git/              # Git 분석 모듈 (JGit 활용)
+│   │   ├── ai/               # AI 요약 모듈 (OpenAI API 활용)
 │   │   ├── template/         # 템플릿 엔진
 │   │   └── model/            # 데이터 클래스
-│   └── build.gradle.kts
-├── mcp-extension/             # MCP 기반 고급 기능 (JDK 17+)
-│   ├── src/main/kotlin/
-│   │   └── ai/               # MCP 통합 모듈
 │   └── build.gradle.kts
 ├── cli/                       # CLI 모듈 (core 의존)
 ├── ide-plugin-intellij/       # IntelliJ 플러그인 (core 의존)
@@ -36,14 +31,14 @@ commit-chronicle/
 
 ### 요구 사항
 
-- JDK 8 이상 (MCP 기능의 경우 JDK 17 이상)
+- JDK 8 이상
+- Kotlin 1.4.20 이상
 - OpenAI API 키
 
 ### 모듈별 호환성 안내
 
-- **core 모듈**: Java 8 이상 지원 (기본 AI 요약 기능)
-- **mcp-extension 모듈**: Java 17 이상 필요 (고급 MCP 기능)
-- **cli 모듈**: Java 8 이상 지원
+- **core 모듈**: Java 8 이상, Kotlin 1.4.20 이상 지원
+- **cli 모듈**: Java 8 이상, Kotlin 1.4.20 이상 지원
 - **ide-plugin-intellij 모듈**: Java 11 이상 지원
 
 ### CLI 설치 및 사용
@@ -59,24 +54,21 @@ commit-chronicle/
 #### Gradle로 직접 실행
 
 ```bash
-# 기본 요약 기능 실행 (Java 8 이상)
+# 기본 요약 기능 실행
 ./gradlew :cli:run --args="--path /path/to/repo --key YOUR_API_KEY"
-
-# MCP 기능 활성화 (Java 17 이상 필요)
-./gradlew :cli:run --args="--path /path/to/repo --key YOUR_API_KEY --mcp"
 ```
 
 #### CLI 명령어 상세 옵션
 
 ```bash
 # 커밋 요약 생성
-./gradlew :cli:run --args="--path /path/to/repo --key YOUR_API_KEY [--mcp] [-d DAYS] [-l LIMIT]"
+./gradlew :cli:run --args="--path /path/to/repo --key YOUR_API_KEY [-d DAYS] [-l LIMIT]"
 
 # PR 초안 생성
-./gradlew :cli:run --args="pr --path /path/to/repo --key YOUR_API_KEY [--mcp] [-t TITLE] [--template TEMPLATE_PATH]"
+./gradlew :cli:run --args="pr --path /path/to/repo --key YOUR_API_KEY [-t TITLE] [--template TEMPLATE_PATH]"
 
 # 변경 로그 생성
-./gradlew :cli:run --args="changelog --path /path/to/repo --key YOUR_API_KEY [--mcp] [--group] [--template TEMPLATE_PATH]"
+./gradlew :cli:run --args="changelog --path /path/to/repo --key YOUR_API_KEY [--group] [--template TEMPLATE_PATH]"
 ```
 
 #### 배포 버전 실행
@@ -105,11 +97,8 @@ java -jar cli/build/libs/commitchronicle-cli-0.1.0-all.jar --path /path/to/repo 
 ### 모듈별 테스트 실행
 
 ```bash
-# core 모듈 테스트 (Java 8 환경)
+# core 모듈 테스트
 ./gradlew :core:test
-
-# mcp-extension 모듈 테스트 (Java 17 환경)
-./gradlew :mcp-extension:test
 
 # cli 모듈 테스트
 ./gradlew :cli:test
@@ -154,10 +143,9 @@ class CustomAISummarizer(private val apiKey: String) : AISummarizer {
 
 ```kotlin
 // AISummarizerFactory.kt 업데이트
-fun create(apiKey: String, useMcp: Boolean, engine: String = "openai"): AISummarizer {
+fun create(apiKey: String, engine: String = "openai"): AISummarizer {
     return when (engine) {
         "custom" -> CustomAISummarizer(apiKey)
-        "mcp" -> if (useMcp) loadMcpSummarizer(apiKey) else OpenAISummarizer(apiKey)
         else -> OpenAISummarizer(apiKey)
     }
 }
