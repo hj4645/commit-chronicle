@@ -15,13 +15,18 @@ CommitChronicle는 Git 커밋 히스토리와 AI를 활용해 Pull Request 초�
 
 ```
 commit-chronicle/
-├── core/                      # 핵심 라이브러리 (공통 인터페이스 및 기본 구현)
-│   ├── src/main/kotlin/
-│   │   ├── git/              # Git 분석 모듈 (JGit 활용)
-│   │   ├── ai/               # AI 요약 모듈 (OpenAI API 활용)
-│   │   ├── template/         # 템플릿 엔진
-│   │   └── model/            # 데이터 클래스
-│   └── build.gradle.kts
+├── core/                      # 핵심 라이브러리
+│   ├── api/                   # 인터페이스 및 도메인 모델
+│   │   └── src/main/kotlin/com/commitchronicle/
+│   │       ├── ai/           # AI 요약 인터페이스
+│   │       ├── git/          # Git 분석 인터페이스
+│   │       ├── model/        # 데이터 클래스
+│   │       └── template/     # 템플릿 엔진 인터페이스
+│   └── impl/                 # 구현체
+│       └── src/main/kotlin/com/commitchronicle/
+│           ├── ai/           # OpenAI 구현체
+│           ├── git/          # JGit 구현체
+│           └── template/     # Markdown 템플릿 구현체
 ├── cli/                       # CLI 모듈 (core 의존)
 ├── ide-plugin-intellij/       # IntelliJ 플러그인 (core 의존)
 └── settings.gradle.kts

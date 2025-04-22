@@ -1,8 +1,8 @@
 package com.commitchronicle.cli
 
 import com.commitchronicle.ai.AISummarizerFactory
-import com.commitchronicle.git.JGitAnalyzer
-import com.commitchronicle.template.MarkdownTemplateEngine
+import com.commitchronicle.git.GitAnalyzerFactory
+import com.commitchronicle.template.TemplateEngineFactory
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.*
@@ -57,7 +57,7 @@ class Summarize : CliktCommand() {
         runBlocking {
             echo("커밋 요약 생성 중...")
 
-            val gitAnalyzer = JGitAnalyzer(repoPath)
+            val gitAnalyzer = GitAnalyzerFactory.create(repoPath)
             val aiSummarizer = AISummarizerFactory.create(apiKey)
 
             val commits = when {
@@ -118,7 +118,7 @@ class GeneratePR : CliktCommand(name = "pr") {
         runBlocking {
             echo("PR 초안 생성 중...")
 
-            val gitAnalyzer = JGitAnalyzer(repoPath)
+            val gitAnalyzer = GitAnalyzerFactory.create(repoPath)
             val aiSummarizer = AISummarizerFactory.create(apiKey)
 
             val commits = when {
@@ -137,7 +137,7 @@ class GeneratePR : CliktCommand(name = "pr") {
 
             echo("${commits.size}개의 커밋을 분석 중...")
             val prDraft = if (templatePath != null) {
-                val templateEngine = MarkdownTemplateEngine()
+                val templateEngine = TemplateEngineFactory.create()
                 val summary = aiSummarizer.summarize(commits)
 
                 val data = mapOf(
@@ -193,7 +193,7 @@ class GenerateChangelog : CliktCommand(name = "changelog") {
         runBlocking {
             echo("변경 로그 생성 중...")
 
-            val gitAnalyzer = JGitAnalyzer(repoPath)
+            val gitAnalyzer = GitAnalyzerFactory.create(repoPath)
             val aiSummarizer = AISummarizerFactory.create(apiKey)
 
             val commits = when {
@@ -212,7 +212,7 @@ class GenerateChangelog : CliktCommand(name = "changelog") {
 
             echo("${commits.size}개의 커밋을 분석 중...")
             val changelog = if (templatePath != null) {
-                val templateEngine = MarkdownTemplateEngine()
+                val templateEngine = TemplateEngineFactory.create()
                 val summary = aiSummarizer.summarize(commits)
 
                 val data = mapOf(

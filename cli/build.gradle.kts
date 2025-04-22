@@ -1,19 +1,27 @@
 plugins {
     kotlin("jvm")
-    application
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 dependencies {
-    implementation(project(":core"))
-    implementation("com.github.ajalt.clikt:clikt:3.5.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation(project(":core:api"))
+    implementation(project(":core:impl"))
+    implementation("com.github.ajalt.clikt:clikt:4.2.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 }
 
-application {
-    mainClass.set("com.commitchronicle.cli.MainKt")
+tasks {
+    shadowJar {
+        archiveBaseName.set("commitchronicle-cli")
+        archiveVersion.set("0.1.0")
+        archiveClassifier.set("all")
+        manifest {
+            attributes["Main-Class"] = "com.commitchronicle.cli.MainKt"
+        }
+    }
 }
 
 tasks.test {

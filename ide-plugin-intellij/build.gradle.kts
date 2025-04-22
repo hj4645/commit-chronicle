@@ -1,31 +1,34 @@
 plugins {
-    kotlin("jvm")
-    id("org.jetbrains.intellij") version "1.17.4"
+    id("java")
+    id("org.jetbrains.intellij") version "1.17.1"
+}
+
+group = "com.commitchronicle"
+version = "0.1.0"
+
+repositories {
+    mavenCentral()
 }
 
 dependencies {
-    implementation(project(":core"))
-
-    testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
+    implementation(project(":core:api"))
+    implementation(project(":core:impl"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 }
 
 intellij {
-    version.set("2023.3")
+    version.set("2023.2")
     type.set("IC")
-    plugins.set(listOf("Git4Idea"))
+    plugins.set(listOf("git4idea"))
+}
+
+tasks {
+    patchPluginXml {
+        sinceBuild.set("232")
+        untilBuild.set("242.*")
+    }
 }
 
 tasks.test {
     useJUnitPlatform()
 }
-
-tasks.patchPluginXml {
-    version.set(project.version.toString())
-    sinceBuild.set("231")
-    untilBuild.set("241.*")
-}
-
-//kotlin {
-//    jvmToolchain(11)
-//}
