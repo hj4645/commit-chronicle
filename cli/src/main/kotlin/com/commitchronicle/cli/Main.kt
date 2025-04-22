@@ -1,8 +1,5 @@
 package com.commitchronicle.cli
 
-import com.commitchronicle.ai.AISummarizerFactory
-import com.commitchronicle.git.GitAnalyzerFactory
-import com.commitchronicle.template.TemplateEngineFactory
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.*

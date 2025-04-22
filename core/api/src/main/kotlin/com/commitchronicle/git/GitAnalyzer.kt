@@ -24,10 +24,10 @@ interface GitAnalyzer {
     suspend fun getCommitRange(from: String, to: String = "HEAD"): List<Commit>
     
     /**
-     * 최근 N개의 커밋을 가져옵니다.
+     * 최근 커밋을 제한된 개수만큼 가져옵니다.
      *
-     * @param limit 가져올 커밋 수
+     * @param limit 가져올 최대 커밋 수
      * @return 커밋 목록
      */
-    fun getRecentCommits(limit: Int): List<Commit>
+    suspend fun getRecentCommits(limit: Int): List<Commit>
 } 

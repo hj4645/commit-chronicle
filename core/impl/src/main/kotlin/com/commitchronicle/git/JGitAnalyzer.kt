@@ -18,6 +18,8 @@ import java.nio.charset.StandardCharsets
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * JGit 라이브러리를 사용한 GitAnalyzer 구현
@@ -26,12 +28,12 @@ class JGitAnalyzer(private val repoPath: String) : GitAnalyzer {
     private val git: Git by lazy { Git.open(File(repoPath)) }
     private val repository: Repository by lazy { git.repository }
 
-    override fun getCommits(sinceDays: Int): List<Commit> {
+    override suspend fun getCommits(days: Int): List<Commit> = withContext(Dispatchers.IO) {
         val calendar = Calendar.getInstance()
-        calendar.add(Calendar.DAY_OF_YEAR, -sinceDays)
+        calendar.add(Calendar.DAY_OF_YEAR, -days)
 
         try {
-            return git.log()
+            return@withContext git.log()
                 .all()
                 .setRevFilter(object : RevFilter() {
                     override fun include(walker: RevWalk, commit: RevCommit): Boolean {
@@ -46,39 +48,36 @@ class JGitAnalyzer(private val repoPath: String) : GitAnalyzer {
                 .call()
                 .map { revCommit -> mapToCommit(revCommit) }
         } catch (e: Exception) {
-            // Log the error or handle it appropriately
             println("Error getting commits: ${e.message}")
-            return emptyList()
+            return@withContext emptyList()
         }
     }
 
-    override fun getCommitRange(fromCommit: String, toCommit: String): List<Commit> {
+    override suspend fun getCommitRange(from: String, to: String): List<Commit> = withContext(Dispatchers.IO) {
         try {
-            val resolvedToCommit = if (toCommit == "HEAD") "HEAD" else toCommit
-            return git.log()
+            val resolvedToCommit = if (to == "HEAD") "HEAD" else to
+            return@withContext git.log()
                 .addRange(
-                    repository.resolve(fromCommit), 
+                    repository.resolve(from), 
                     repository.resolve(resolvedToCommit)
                 )
                 .call()
                 .map { revCommit -> mapToCommit(revCommit) }
         } catch (e: Exception) {
-            // Log the error or handle it appropriately
             println("Error getting commit range: ${e.message}")
-            return emptyList()
+            return@withContext emptyList()
         }
     }
 
-    override fun getRecentCommits(limit: Int): List<Commit> {
+    override suspend fun getRecentCommits(limit: Int): List<Commit> = withContext(Dispatchers.IO) {
         try {
-            return git.log()
+            return@withContext git.log()
                 .setMaxCount(limit)
                 .call()
                 .map { revCommit -> mapToCommit(revCommit) }
         } catch (e: Exception) {
-            // Log the error or handle it appropriately
             println("Error getting recent commits: ${e.message}")
-            return emptyList()
+            return@withContext emptyList()
         }
     }
 
@@ -124,7 +123,6 @@ class JGitAnalyzer(private val repoPath: String) : GitAnalyzer {
                 return diffs.map { mapToFileChange(it, diffFormatter) }
             }
         } catch (e: Exception) {
-            // Log the error or handle it appropriately
             println("Error getting changes for commit: ${e.message}")
             return emptyList()
         }
@@ -142,7 +140,6 @@ class JGitAnalyzer(private val repoPath: String) : GitAnalyzer {
                 }
             }
         } catch (e: Exception) {
-            // Log the error or handle it appropriately
             diff = "Error generating diff: ${e.message}"
         }
 

@@ -12,10 +12,14 @@ dependencies {
     implementation("io.ktor:ktor-client-core:${ktor_version}")
     implementation("io.ktor:ktor-client-cio:${ktor_version}")
     implementation("io.ktor:ktor-serialization-jackson-jvm:${ktor_version}")
-    implementation("io.ktor:ktor-server-content-negotiation-jvm")
+    implementation("io.ktor:ktor-client-content-negotiation-jvm:${ktor_version}")
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+}
+
+kotlin {
+    jvmToolchain(8)
 } 
