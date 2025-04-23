@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.9.22" apply false
+    kotlin("jvm") version "1.5.10" apply false
 }
 
 allprojects {
@@ -12,5 +12,21 @@ allprojects {
 }
 
 subprojects {
-    // 각 서브프로젝트는 자체 build.gradle.kts에서 필요한 플러그인을 적용
+    plugins.withId("org.jetbrains.kotlin.jvm") {
+        configure<org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension> {
+            jvmToolchain(8)
+            sourceSets.all {
+                languageSettings {
+                    languageVersion = "1.5"
+                    apiVersion = "1.5"
+                }
+            }
+        }
+        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+            kotlinOptions {
+                jvmTarget = "1.8"
+                freeCompilerArgs = listOf("-Xjsr305=strict")
+            }
+        }
+    }
 }
