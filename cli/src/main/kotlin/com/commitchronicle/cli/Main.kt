@@ -1,12 +1,15 @@
 package com.commitchronicle.cli
 
+import com.commitchronicle.ai.AIProviderType
 import com.commitchronicle.ai.AISummarizerFactory
+import com.commitchronicle.ai.DefaultAIProviderConfig
 import com.commitchronicle.git.GitAnalyzerFactory
 import com.commitchronicle.template.TemplateEngineFactory
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.int
+import com.github.ajalt.clikt.parameters.types.enum
 import kotlinx.coroutines.runBlocking
 import java.io.File
 
@@ -31,6 +34,16 @@ class CommitChronicle : CliktCommand() {
     }
 }
 
+// AI 제공자 타입 선택을 위한 공통 옵션 확장 함수
+private fun CliktCommand.providerOptions() = 
+    option("-prov", "--provider", help = "AI 제공자 (OPENAI, CLAUDE, PERPLEXITY)")
+        .enum<AIProviderType>()
+        .default(AIProviderType.OPENAI)
+
+// 모델 이름 옵션 확장 함수
+private fun CliktCommand.modelOption() =
+    option("-m", "--model", help = "사용할 AI 모델 이름 (제공자마다 다름)")
+
 class Summarize : CliktCommand() {
     private val repoPath by option("-p", "--path", help = "Git 저장소 경로")
         .default(".")
@@ -48,17 +61,26 @@ class Summarize : CliktCommand() {
     private val toCommit by option("--to", help = "종료 커밋 ID (범위 지정 시)")
         .default("HEAD")
 
-    private val apiKey by option("-k", "--key", help = "OpenAI API 키")
+    private val apiKey by option("-k", "--key", help = "API 키")
         .required()
 
     private val outputFile by option("-o", "--output", help = "출력 파일 경로 (지정하지 않으면 콘솔에 출력)")
+
+    private val provider by providerOptions()
+    
+    private val modelName by modelOption()
 
     override fun run() {
         runBlocking {
             echo("커밋 요약 생성 중...")
 
             val gitAnalyzer = GitAnalyzerFactory.create(repoPath)
-            val aiSummarizer = AISummarizerFactory.create(apiKey)
+            val aiConfig = if (modelName != null) {
+                DefaultAIProviderConfig(apiKey, modelName)
+            } else {
+                DefaultAIProviderConfig(apiKey)
+            }
+            val aiSummarizer = AISummarizerFactory.create(aiConfig, provider)
 
             val commits = when {
                 fromCommit != null -> {
@@ -107,19 +129,28 @@ class GeneratePR : CliktCommand(name = "pr") {
 
     private val title by option("-t", "--title", help = "PR 제목 (지정하지 않으면 자동 생성)")
 
-    private val apiKey by option("-k", "--key", help = "OpenAI API 키")
+    private val apiKey by option("-k", "--key", help = "API 키")
         .required()
 
     private val outputFile by option("-o", "--output", help = "출력 파일 경로 (지정하지 않으면 콘솔에 출력)")
 
     private val templatePath by option("--template", help = "사용자 정의 템플릿 파일 경로")
+    
+    private val provider by providerOptions()
+    
+    private val modelName by modelOption()
 
     override fun run() {
         runBlocking {
             echo("PR 초안 생성 중...")
 
             val gitAnalyzer = GitAnalyzerFactory.create(repoPath)
-            val aiSummarizer = AISummarizerFactory.create(apiKey)
+            val aiConfig = if (modelName != null) {
+                DefaultAIProviderConfig(apiKey, modelName)
+            } else {
+                DefaultAIProviderConfig(apiKey)
+            }
+            val aiSummarizer = AISummarizerFactory.create(aiConfig, provider)
 
             val commits = when {
                 fromCommit != null -> {
@@ -179,7 +210,7 @@ class GenerateChangelog : CliktCommand(name = "changelog") {
     private val toCommit by option("--to", help = "종료 커밋 ID (범위 지정 시)")
         .default("HEAD")
 
-    private val apiKey by option("-k", "--key", help = "OpenAI API 키")
+    private val apiKey by option("-k", "--key", help = "API 키")
         .required()
 
     private val outputFile by option("-o", "--output", help = "출력 파일 경로 (지정하지 않으면 콘솔에 출력)")
@@ -188,13 +219,22 @@ class GenerateChangelog : CliktCommand(name = "changelog") {
 
     private val groupByType by option("-g", "--group", help = "변경 유형별로 그룹화")
         .flag(default = true)
+        
+    private val provider by providerOptions()
+    
+    private val modelName by modelOption()
 
     override fun run() {
         runBlocking {
             echo("변경 로그 생성 중...")
 
             val gitAnalyzer = GitAnalyzerFactory.create(repoPath)
-            val aiSummarizer = AISummarizerFactory.create(apiKey)
+            val aiConfig = if (modelName != null) {
+                DefaultAIProviderConfig(apiKey, modelName)
+            } else {
+                DefaultAIProviderConfig(apiKey)
+            }
+            val aiSummarizer = AISummarizerFactory.create(aiConfig, provider)
 
             val commits = when {
                 fromCommit != null -> {

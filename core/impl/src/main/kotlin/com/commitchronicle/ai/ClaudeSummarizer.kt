@@ -14,15 +14,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * OpenAI API를 사용하여 커밋 요약을 생성하는 AISummarizer 구현체
+ * Anthropic Claude API를 사용하여 커밋 요약을 생성하는 AISummarizer 구현체
  */
-class OpenAISummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
+class ClaudeSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
     private val httpClient = HttpClient(CIO) {
         install(ContentNegotiation) {
             jackson()
         }
     }
-
+    
     override suspend fun summarize(commits: List<Commit>): String {
         if (commits.isEmpty()) {
             return "변경 사항이 없습니다."
@@ -102,61 +102,35 @@ class OpenAISummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
     
     override protected suspend fun callAIModel(prompt: String): String = withContext(Dispatchers.IO) {
         try {
-            println("OpenAI API 호출 중...")
+            println("Claude API 호출 중...")
             
-            // 모델 설정 (기본값: gpt-3.5-turbo)
-            var model = config.modelName ?: "gpt-3.5-turbo"
+            // 모델 설정 (기본값: claude-3-sonnet-20240229)
+            val model = config.modelName ?: "claude-3-sonnet-20240229"
             
             // API 요청
-            var apiResponse = httpClient.post("https://api.openai.com/v1/chat/completions") {
-                header("Authorization", "Bearer ${config.apiKey}")
+            val apiResponse = httpClient.post("https://api.anthropic.com/v1/messages") {
+                header("x-api-key", config.apiKey)
+                header("anthropic-version", "2023-06-01")
                 contentType(ContentType.Application.Json)
-                setBody(OpenAIRequest(
+                setBody(ClaudeRequest(
                     model = model,
+                    system = "당신은 개발자를 위한 유용한 요약과 문서를 제공하는 AI 조수입니다.",
                     messages = listOf(
-                        Message(role = "system", content = "당신은 개발자를 위한 유용한 요약과 문서를 제공하는 AI 조수입니다."),
-                        Message(role = "user", content = prompt)
+                        ClaudeMessage(role = "user", content = prompt)
                     ),
-                    temperature = 0.7
+                    max_tokens = 2000
                 ))
             }
             
             // API 응답 디버깅
-            var responseText = apiResponse.body<String>()
+            val responseText = apiResponse.body<String>()
             println("API 응답: $responseText")
-            
-            // 모델 에러가 있는지 확인
-            if (responseText.contains("error") && 
-                (responseText.contains("model_not_found") || 
-                 responseText.contains("does not exist or you do not have access to it"))) {
-                
-                // 모델 접근 권한이 없으면 gpt-3.5-turbo로 폴백
-                println("${model} 모델에 접근할 수 없습니다. gpt-3.5-turbo 모델로 시도합니다.")
-                model = "gpt-3.5-turbo"
-                
-                // 재시도
-                apiResponse = httpClient.post("https://api.openai.com/v1/chat/completions") {
-                    header("Authorization", "Bearer ${config.apiKey}")
-                    contentType(ContentType.Application.Json)
-                    setBody(OpenAIRequest(
-                        model = model,
-                        messages = listOf(
-                            Message(role = "system", content = "당신은 개발자를 위한 유용한 요약과 문서를 제공하는 AI 조수입니다."),
-                            Message(role = "user", content = prompt)
-                        ),
-                        temperature = 0.7
-                    ))
-                }
-                
-                responseText = apiResponse.body<String>()
-                println("GPT-3.5 API 응답: $responseText")
-            }
             
             // 응답에서 필요한 정보 추출
             if (!responseText.contains("error")) {
                 try {
-                    val response: OpenAIResponse = apiResponse.body()
-                    return@withContext response.getFirstChoiceContent()
+                    val response: ClaudeResponse = apiResponse.body()
+                    return@withContext response.content ?: "응답을 생성할 수 없습니다."
                 } catch (e: Exception) {
                     println("응답 파싱 오류: ${e.message}")
                     return@withContext "응답 파싱 오류: ${e.message}"
@@ -166,48 +140,39 @@ class OpenAISummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
             }
         } catch (e: Exception) {
             println("API 오류 상세: ${e.stackTraceToString()}")
-            return@withContext "OpenAI API 호출 중 오류 발생: ${e.message}"
+            return@withContext "Claude API 호출 중 오류 발생: ${e.message}"
         }
     }
     
-    // OpenAI API 요청 및 응답 모델
-    data class OpenAIRequest(
+    // Claude API 요청 및 응답 모델
+    data class ClaudeRequest(
         val model: String,
-        val messages: List<Message>,
+        val system: String,
+        val messages: List<ClaudeMessage>,
+        val max_tokens: Int = 2000,
         val temperature: Double = 0.7
     )
     
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class OpenAIResponse(
-        val id: String? = null,
-        @JsonProperty("object") val objectType: String? = null,
-        val created: Long? = null,
-        val model: String? = null,
-        val choices: List<Choice>? = emptyList(),
-        val usage: Usage? = null
-    ) {
-        // 널 안전성을 위한 확장 함수
-        fun getFirstChoiceContent(): String {
-            return choices?.firstOrNull()?.message?.content ?: "응답을 생성할 수 없습니다."
-        }
-    }
-    
-    data class Message(
+    data class ClaudeMessage(
         val role: String,
         val content: String
     )
     
     @JsonIgnoreProperties(ignoreUnknown = true)
-    data class Choice(
-        val index: Int = 0,
-        val message: Message? = null,
-        @JsonProperty("finish_reason") val finishReason: String? = null
+    data class ClaudeResponse(
+        val id: String? = null,
+        val type: String? = null,
+        val role: String? = null,
+        val content: String? = null,
+        val model: String? = null,
+        val stop_reason: String? = null,
+        val stop_sequence: String? = null,
+        val usage: ClaudeUsage? = null
     )
     
     @JsonIgnoreProperties(ignoreUnknown = true)
-    data class Usage(
-        @JsonProperty("prompt_tokens") val promptTokens: Int? = null,
-        @JsonProperty("completion_tokens") val completionTokens: Int? = null,
-        @JsonProperty("total_tokens") val totalTokens: Int? = null
+    data class ClaudeUsage(
+        val input_tokens: Int? = null,
+        val output_tokens: Int? = null
     )
 } 
