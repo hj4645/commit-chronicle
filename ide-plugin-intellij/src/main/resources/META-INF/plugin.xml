@@ -19,11 +19,18 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>Git4Idea</depends>
 
-    <resource-bundle>messages.CommitChronicleBundle</resource-bundle>
+<!--    <resource-bundle>messages.CommitChronicleBundle</resource-bundle>-->
 
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="CommitChronicle.Notifications" displayType="BALLOON" />
+        <applicationService serviceImplementation="com.commitchronicle.intellij.CoroutineService" />
+        <applicationInitializedListener implementation="com.commitchronicle.intellij.CommitChronicleAppInitializedListener" />
     </extensions>
+
+    <projectListeners>
+        <listener class="com.commitchronicle.intellij.CommitChroniclePlugin$Listener" 
+                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
+    </projectListeners>
 
     <actions>
         <group id="CommitChronicle.ActionGroup" text="CommitChronicle" description="CommitChronicle Actions">
