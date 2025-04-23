@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.5.10" apply false
+    kotlin("jvm") version "2.1.0" apply false
 }
 
 allprojects {
@@ -17,8 +17,8 @@ subprojects {
             jvmToolchain(8)
             sourceSets.all {
                 languageSettings {
-                    languageVersion = "1.5"
-                    apiVersion = "1.5"
+                    languageVersion = "1.6"
+                    apiVersion = "1.6"
                 }
             }
         }

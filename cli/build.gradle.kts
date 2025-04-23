@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm")
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    application
 }
 
 dependencies {
@@ -38,4 +39,8 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
         apiVersion = "1.8"
         languageVersion = "1.8"
     }
+}
+
+application {
+    mainClass.set("com.commitchronicle.cli.MainKt")
 }

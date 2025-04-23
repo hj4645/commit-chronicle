@@ -1,7 +1,6 @@
 plugins {
     id("java")
     id("org.jetbrains.intellij") version "1.15.0"
-    kotlin("jvm")
 }
 
 group = "com.commitchronicle"
@@ -9,7 +8,7 @@ version = "0.1.0"
 
 // 자바 및 코틀린 버전 설정
 val javaVersion = "11"
-val coroutinesVersion = "1.5.2" // IntelliJ 2021.3과 호환되는 버전
+val coroutinesVersion = "1.6.4" // IntelliJ 2021.3과 호환되는 버전
 
 sourceSets {
     main {
@@ -69,8 +68,8 @@ tasks {
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         compilerOptions {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
-            languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_5)
-            apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_5)
+            languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_6)
+            apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_6)
             freeCompilerArgs.add("-Xskip-metadata-version-check")
         }
     }
@@ -117,8 +116,6 @@ tasks {
         jvmArgs("-Xmx2g")
         // 코루틴 디버그 옵션
         jvmArgs("-Dkotlinx.coroutines.debug")
-        // ASM 9 지원을 위한 옵션
-        jvmArgs("-Dasm.all=9")
     }
     
     // 모든 빌드 캐시와 임시 파일 삭제를 위한 태스크
