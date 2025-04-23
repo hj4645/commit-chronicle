@@ -24,7 +24,9 @@
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="CommitChronicle.Notifications" displayType="BALLOON" />
         <applicationService serviceImplementation="com.commitchronicle.intellij.CoroutineService" />
-        <applicationInitializedListener implementation="com.commitchronicle.intellij.CommitChronicleAppInitializedListener" />
+        <appListener
+                topic="com.intellij.ide.AppLifecycleListener"
+                implementation="com.commitchronicle.intellij.CommitChronicleAppInitializedListener"/>
     </extensions>
 
     <projectListeners>
