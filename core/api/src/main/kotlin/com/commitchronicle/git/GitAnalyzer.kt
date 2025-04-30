@@ -1,6 +1,6 @@
 package com.commitchronicle.git
 
-import com.commitchronicle.model.Commit
+import com.commitchronicle.git.model.Commit
 
 /**
  * Git 저장소를 분석하는 인터페이스

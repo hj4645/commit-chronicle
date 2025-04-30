@@ -1,8 +1,8 @@
 package com.commitchronicle.git
 
-import com.commitchronicle.model.ChangeType
-import com.commitchronicle.model.Commit
-import com.commitchronicle.model.FileChange
+import com.commitchronicle.git.model.ChangeType
+import com.commitchronicle.git.model.Commit
+import com.commitchronicle.git.model.FileChange
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.diff.DiffEntry
 import org.eclipse.jgit.diff.DiffFormatter

@@ -1,12 +1,16 @@
 package com.commitchronicle.ai
 
+import com.commitchronicle.language.Locale
+
 /**
  * AI 프로바이더 타입을 정의하는 열거형
  */
 enum class AIProviderType {
     OPENAI,
     CLAUDE,
-    PERPLEXITY
+    PERPLEXITY,
+    DEEPSEEK,
+    GEMINI
 }
 
 /**
@@ -15,12 +19,5 @@ enum class AIProviderType {
 interface AIProviderConfig {
     val apiKey: String
     val modelName: String?
+    val locale: Locale?
 }
-
-/**
- * 기본 AI 프로바이더 설정 구현체
- */
-data class DefaultAIProviderConfig(
-    override val apiKey: String,
-    override val modelName: String? = null
-) : AIProviderConfig 

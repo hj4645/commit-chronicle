@@ -1,4 +1,4 @@
-package com.commitchronicle.model
+package com.commitchronicle.git.model
 
 import java.time.ZonedDateTime
 

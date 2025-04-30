@@ -1,6 +1,6 @@
 package com.commitchronicle.intellij
 
-import com.commitchronicle.ai.AISummarizerFactory
+import com.commitchronicle.ai.factory.AISummarizerFactory
 import com.commitchronicle.git.JGitAnalyzer
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
