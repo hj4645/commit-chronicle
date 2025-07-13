@@ -49,9 +49,8 @@ class Config : CliktCommand(
     private val apiKey by option("-k", "--key", help = MessageBundleProvider.getMessage("option.api-key.description"))
     private val providerType by option("-p", "--provider", help = MessageBundleProvider.getMessage("option.provider.description"))
         .choice("openai", "claude", "perplexity", "deepseek", "gemini", ignoreCase = true)
-    private val model by option("-m", "--model", help = MessageBundleProvider.getMessage("option.model.description"))
     private val locale by option("--locale", help = MessageBundleProvider.getMessage("option.locale.description"))
-        .choice(*Locale.values().map { it.code to "${it.code} (${it.languageName})" }.toTypedArray(), ignoreCase = true)
+        .choice("en", "ko", ignoreCase = true)
     private val show by option("--show", help = MessageBundleProvider.getMessage("option.show.description")).flag()
     private val reset by option("--reset", help = MessageBundleProvider.getMessage("option.reset.description")).flag()
 
@@ -75,7 +74,6 @@ class Config : CliktCommand(
                 ${MessageBundleProvider.getMessage("message.config.current")}:
                 - ${MessageBundleProvider.getMessage("option.api-key.description")}: ${config.apiKey?.let { "***" } ?: MessageBundleProvider.getMessage("message.config.not-set")}
                 - ${MessageBundleProvider.getMessage("option.provider.description")}: ${config.providerType ?: MessageBundleProvider.getMessage("message.config.not-set")}
-                - ${MessageBundleProvider.getMessage("option.model.description")}: ${config.modelName ?: MessageBundleProvider.getMessage("message.config.not-set")}
                 - ${MessageBundleProvider.getMessage("option.locale.description")}: ${config.locale ?: MessageBundleProvider.getMessage("message.config.not-set")}
             """.trimIndent())
             return
@@ -85,7 +83,6 @@ class Config : CliktCommand(
         val newConfig = currentConfig.copy(
             apiKey = apiKey ?: currentConfig.apiKey,
             providerType = providerType ?: currentConfig.providerType,
-            modelName = model ?: currentConfig.modelName,
             locale = locale ?: currentConfig.locale
         )
 
@@ -109,12 +106,9 @@ class AIOptions : OptionGroup() {
     val providerType by option("-p", "--provider", help = MessageBundleProvider.getMessage("option.provider.description"))
         .choice("openai", "claude", "perplexity", "deepseek", "gemini", ignoreCase = true)
         .default(config.providerType ?: "openai")
-        
-    val model by option("-m", "--model", help = MessageBundleProvider.getMessage("option.model.description"))
-        .default(config.modelName ?: "")
     
     val locale by option("--locale", help = MessageBundleProvider.getMessage("option.locale.description"))
-        .choice(*Locale.values().map { it.code to "${it.code} (${it.languageName})" }.toTypedArray(), ignoreCase = true)
+        .choice("en", "ko", ignoreCase = true)
         .default(config.locale ?: Locale.ENGLISH.code)
 }
 
@@ -122,7 +116,7 @@ class AIOptions : OptionGroup() {
 class GitOptions : OptionGroup() {
     val path by option("--path", help = MessageBundleProvider.getMessage("option.repo.description"))
         .path(mustExist = true, canBeFile = false)
-        .required()
+        .default(java.nio.file.Paths.get("."))
         
     val branch by option("-b", "--branch", help = MessageBundleProvider.getMessage("option.branch.description"))
         
@@ -157,27 +151,22 @@ abstract class BaseCommand(
         val config = when (aiOptions.providerType.lowercase()) {
             "openai" -> OpenAIConfig(
                 apiKey = aiOptions.apiKey,
-                modelName = aiOptions.model,
                 locale = Locale.fromCode(aiOptions.locale)
             )
             "claude" -> ClaudeConfig(
                 apiKey = aiOptions.apiKey,
-                modelName = aiOptions.model,
                 locale = Locale.fromCode(aiOptions.locale)
             )
             "deepseek" -> DeepSeekConfig(
                 apiKey = aiOptions.apiKey,
-                modelName = aiOptions.model,
                 locale = Locale.fromCode(aiOptions.locale)
             )
             "gemini" -> GeminiConfig(
                 apiKey = aiOptions.apiKey,
-                modelName = aiOptions.model,
                 locale = Locale.fromCode(aiOptions.locale)
             )
             "perplexity" -> PerplexityConfig(
                 apiKey = aiOptions.apiKey,
-                modelName = aiOptions.model,
                 locale = Locale.fromCode(aiOptions.locale)
             )
             else -> throw IllegalArgumentException("지원하지 않는 AI 프로바이더입니다: ${aiOptions.providerType}")
@@ -202,15 +191,7 @@ abstract class BaseCommand(
         }
     }
     
-    protected fun writeOutput(content: String, outputFile: String?) {
-        if (outputFile != null) {
-            File(outputFile).writeText(content)
-            echo("${MessageBundleProvider.getMessage("message.output.saved")}: $outputFile")
-        } else {
-            echo("\n${MessageBundleProvider.getMessage("message.output.result")}\n")
-            echo(content)
-        }
-    }
+
 }
 
 // 메인 커맨드
@@ -254,13 +235,10 @@ class Summarize : BaseCommand(
     name = "summarize",
     help = MessageBundleProvider.getMessage("command.summarize.description")
 ) {
-    private val outputFile by option("-o", "--output", help = MessageBundleProvider.getMessage("option.output.description"))
     
     override fun run() = runBlocking {
         // locale이 설정되어 있으면 먼저 적용
-        if (aiOptions.locale != null) {
-            MessageBundleProvider.setLocale(Locale.fromCode(aiOptions.locale))
-        }
+        MessageBundleProvider.setLocale(Locale.fromCode(aiOptions.locale))
 
         try {
             val gitAnalyzer = GitAnalyzerFactory.create(gitOptions.path.absolutePathString())
@@ -275,7 +253,9 @@ class Summarize : BaseCommand(
             
             echo("${commits.size}${MessageBundleProvider.getMessage("message.analyzing-commits")}")
             val summary = aiSummarizer.summarize(commits)
-            writeOutput(summary, outputFile)
+            
+            echo("\n${MessageBundleProvider.getMessage("message.output.result")}\n")
+            echo(summary)
         } catch (e: Exception) {
             echo("${MessageBundleProvider.getMessage("error.occurred")}: ${e.message}", err = true)
             e.printStackTrace()
@@ -288,15 +268,10 @@ class GeneratePR : BaseCommand(
     name = "pr",
     help = MessageBundleProvider.getMessage("command.generate-pr.description")
 ) {
-    private val title by option("-t", "--title", help = MessageBundleProvider.getMessage("option.title.description"))
-    private val outputFile by option("-o", "--output", help = MessageBundleProvider.getMessage("option.output.description"))
-    private val templatePath by option("--template", help = MessageBundleProvider.getMessage("option.template.description")).path(mustExist = true, canBeFile = true)
     
     override fun run() = runBlocking {
         // locale이 설정되어 있으면 먼저 적용
-        if (aiOptions.locale != null) {
-            MessageBundleProvider.setLocale(Locale.fromCode(aiOptions.locale))
-        }
+        MessageBundleProvider.setLocale(Locale.fromCode(aiOptions.locale))
 
         try {
             val gitAnalyzer = GitAnalyzerFactory.create(gitOptions.path.absolutePathString())
@@ -310,22 +285,30 @@ class GeneratePR : BaseCommand(
             }
             
             echo("${commits.size}${MessageBundleProvider.getMessage("message.analyzing-commits")}")
-            val prDraft = if (templatePath != null) {
-                val templateEngine = TemplateEngineFactory.create()
-                val summary = aiSummarizer.summarize(commits)
+            
+            // GitHub 템플릿 자동 감지 시도
+            val templateDetector = TemplateEngineFactory.createGitHubTemplateDetector()
+            val githubTemplatePath = templateDetector.findPRTemplate(gitOptions.path.absolutePathString(), Locale.fromCode(aiOptions.locale))
+            
+            val prDraft = if (githubTemplatePath != null) {
+                echo("GitHub PR 템플릿을 감지했습니다: $githubTemplatePath")
+                val templateParser = TemplateEngineFactory.createGitHubTemplateParser(Locale.fromCode(aiOptions.locale))
+                val templateContent = templateDetector.readTemplateContent(githubTemplatePath)
                 
-                val data = mapOf(
-                    "commits" to commits,
-                    "summary" to summary,
-                    "title" to (title ?: MessageBundleProvider.getMessage("message.default-pr-title"))
-                )
-                
-                templateEngine.render(templatePath!!.toString(), data)
+                if (templateContent != null) {
+                    templateParser.parseAndRender(templateContent, commits, null)
+                } else {
+                    echo("템플릿 파일을 읽을 수 없습니다. AI 생성 모드로 전환합니다.")
+                    aiSummarizer.generatePRDraft(commits, null)
+                }
             } else {
-                aiSummarizer.generatePRDraft(commits, title)
+                // GitHub 템플릿이 없으면 AI 생성 사용
+                aiSummarizer.generatePRDraft(commits, null)
             }
             
-            writeOutput(prDraft, outputFile)
+            // 콘솔에 결과 출력
+            echo("\n${MessageBundleProvider.getMessage("message.output.result")}\n")
+            echo(prDraft)
         } catch (e: Exception) {
             echo("${MessageBundleProvider.getMessage("error.occurred")}: ${e.message}", err = true)
             e.printStackTrace()
@@ -339,14 +322,10 @@ class GenerateChangelog : BaseCommand(
     help = MessageBundleProvider.getMessage("command.generate-changelog.description")
 ) {
     private val groupByType by option("--group", help = MessageBundleProvider.getMessage("option.group.description")).flag()
-    private val outputFile by option("-o", "--output", help = MessageBundleProvider.getMessage("option.output.description"))
-    private val templatePath by option("--template", help = MessageBundleProvider.getMessage("option.template.description")).path(mustExist = true, canBeFile = true)
     
     override fun run() = runBlocking {
         // locale이 설정되어 있으면 먼저 적용
-        if (aiOptions.locale != null) {
-            MessageBundleProvider.setLocale(Locale.fromCode(aiOptions.locale))
-        }
+        MessageBundleProvider.setLocale(Locale.fromCode(aiOptions.locale))
 
         try {
             val gitAnalyzer = GitAnalyzerFactory.create(gitOptions.path.absolutePathString())
@@ -360,22 +339,10 @@ class GenerateChangelog : BaseCommand(
             }
 
             echo("${commits.size}${MessageBundleProvider.getMessage("message.analyzing-commits")}")
-            val changelog = if (templatePath != null) {
-                val templateEngine = TemplateEngineFactory.create()
-                val summary = aiSummarizer.summarize(commits)
+            val changelog = aiSummarizer.generateChangelog(commits, groupByType)
 
-                val data = mapOf(
-                    "commits" to commits,
-                    "summary" to summary,
-                    "groupByType" to groupByType
-                )
-
-                templateEngine.render(templatePath!!.toString(), data)
-            } else {
-                aiSummarizer.generateChangelog(commits, groupByType)
-            }
-
-            writeOutput(changelog, outputFile)
+            echo("\n${MessageBundleProvider.getMessage("message.output.result")}\n")
+            echo(changelog)
         } catch (e: Exception) {
             echo("${MessageBundleProvider.getMessage("error.occurred")}: ${e.message}", err = true)
             e.printStackTrace()
