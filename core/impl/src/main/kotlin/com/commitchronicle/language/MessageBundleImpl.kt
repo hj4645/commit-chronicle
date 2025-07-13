@@ -14,21 +14,16 @@ class MessageBundleImpl : MessageBundle {
         private fun loadBundle(locale: Locale) {
             val properties = Properties()
             val resourceName = "/messages_${locale.code}.properties"
-            println("Loading bundle for locale: $locale, resource: $resourceName")
             MessageBundleImpl::class.java.getResourceAsStream(resourceName)?.use {
                 properties.load(it)
-                println("Loaded ${properties.size} properties for locale: $locale")
-            } ?: println("Failed to load resource: $resourceName")
+            }
             bundles[locale.code] = properties
         }
     }
 
     override fun getMessage(key: String, locale: Locale): String {
-        println("Getting message for key: $key, locale: $locale")
-        val message = bundles[locale.code]?.getProperty(key)
+        return bundles[locale.code]?.getProperty(key)
             ?: bundles[Locale.ENGLISH.code]?.getProperty(key)
             ?: key
-        println("Found message: $message")
-        return message
     }
 }
