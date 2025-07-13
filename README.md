@@ -9,6 +9,7 @@ CommitChronicle는 Git 커밋 히스토리와 AI를 활용해 Pull Request 초�
 - PR 초안 자동 생성
 - 변경 로그 자동 생성
 - 사용자 정의 템플릿 지원
+- **GitHub 템플릿 자동 감지 및 적용**
 - IntelliJ IDEA 플러그인 지원
 
 ## 프로젝트 구조
@@ -21,12 +22,12 @@ commit-chronicle/
 │   │       ├── ai/           # AI 요약 인터페이스
 │   │       ├── git/          # Git 분석 인터페이스
 │   │       ├── model/        # 데이터 클래스
-│   │       └── template/     # 템플릿 엔진 인터페이스
+│   │       └── template/     # 템플릿 엔진 및 GitHub 템플릿 감지 인터페이스
 │   └── impl/                 # 구현체
 │       └── src/main/kotlin/com/commitchronicle/
 │           ├── ai/           # OpenAI 구현체
 │           ├── git/          # JGit 구현체
-│           └── template/     # Markdown 템플릿 구현체
+│           └── template/     # Markdown 템플릿 및 GitHub 템플릿 감지 구현체
 ├── cli/                       # CLI 모듈 (core 의존)
 ├── ide-plugin-intellij/       # IntelliJ 플러그인 (core 의존)
 └── settings.gradle.kts
@@ -69,7 +70,7 @@ commit-chronicle/
 # 커밋 요약 생성
 ./gradlew :cli:run --args="--path /path/to/repo --key YOUR_API_KEY [-d DAYS] [-l LIMIT]"
 
-# PR 초안 생성
+# PR 초안 생성 (GitHub 템플릿 자동 감지)
 ./gradlew :cli:run --args="pr --path /path/to/repo --key YOUR_API_KEY [-t TITLE] [--template TEMPLATE_PATH]"
 
 # 변경 로그 생성
@@ -86,6 +87,64 @@ commit-chronicle/
 java -jar cli/build/libs/commitchronicle-cli-0.1.0-all.jar --path /path/to/repo --key YOUR_API_KEY
 ```
 
+### GitHub 템플릿 자동 감지 기능
+
+CommitChronicle는 프로젝트의 GitHub 템플릿을 자동으로 감지하고 적용합니다.
+
+#### 지원하는 GitHub 템플릿 경로
+
+**PR 템플릿:**
+- `.github/pull_request_template.md`
+- `.github/PULL_REQUEST_TEMPLATE.md`
+- `.github/PULL_REQUEST_TEMPLATE/pull_request_template.md`
+- `docs/pull_request_template.md`
+- `docs/PULL_REQUEST_TEMPLATE.md`
+- `pull_request_template.md`
+- `PULL_REQUEST_TEMPLATE.md`
+
+**Issue 템플릿:**
+- `.github/ISSUE_TEMPLATE/` (디렉토리 내 모든 .md, .yml, .yaml 파일)
+- `.github/issue_template.md`
+- `.github/ISSUE_TEMPLATE.md`
+- `docs/issue_template.md`
+- `docs/ISSUE_TEMPLATE.md`
+- `issue_template.md`
+- `ISSUE_TEMPLATE.md`
+
+#### 템플릿 변수 지원
+
+GitHub 템플릿 내에서 다음 변수들을 사용할 수 있습니다:
+
+```markdown
+<!-- PR 템플릿 예시 -->
+# {{title}}
+
+## 변경 사항
+{{commits.summary}}
+
+## 커밋 목록
+{{commits.list}}
+
+## 변경된 파일
+{{commits.files}}
+
+## 참여자
+{{commits.authors}}
+
+## 체크리스트
+- [ ] 테스트 완료
+- [ ] 문서 업데이트
+- [ ] Breaking changes 확인
+```
+
+#### 자동 체크박스 처리
+
+템플릿의 체크박스는 커밋 내용을 분석하여 자동으로 체크됩니다:
+- 테스트 관련 커밋이 있으면 "test" 관련 체크박스 자동 체크
+- 문서 관련 커밋이 있으면 "documentation" 관련 체크박스 자동 체크
+- 버그 수정 커밋이 있으면 "fix" 관련 체크박스 자동 체크
+- 새 기능 커밋이 있으면 "feature" 관련 체크박스 자동 체크
+
 ### IntelliJ 플러그인 설치 및 사용
 
 1. IntelliJ IDEA에서 플러그인 빌드:
@@ -96,6 +155,7 @@ java -jar cli/build/libs/commitchronicle-cli-0.1.0-all.jar --path /path/to/repo 
 2. 빌드된 플러그인(ide-plugin-intellij/build/distributions/CommitChronicle-*.zip) 설치
 3. `Tools > CommitChronicle` 메뉴에서 원하는 기능 실행
 4. OpenAI API 키 입력 후 실행
+5. PR 생성 시 GitHub 템플릿이 자동으로 감지되어 적용됩니다
 
 ## 테스트 및 모듈 검증
 
