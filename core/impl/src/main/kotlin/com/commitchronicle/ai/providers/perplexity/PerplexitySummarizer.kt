@@ -43,7 +43,7 @@ class PerplexitySummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
         return callAIModel(buildChangelogPrompt(commits, groupByType))
     }
 
-    override protected suspend fun callAIModel(prompt: String): String = withContext(Dispatchers.IO) {
+    override suspend fun callAIModel(prompt: String): String = withContext(Dispatchers.IO) {
         try {
             println("Perplexity API 호출 중...")
             val model = config.modelName ?: "sonar"

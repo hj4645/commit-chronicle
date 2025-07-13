@@ -42,14 +42,13 @@ class GeminiSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
         return callAIModel(buildChangelogPrompt(commits, groupByType))
     }
 
-    override protected suspend fun callAIModel(prompt: String): String = withContext(Dispatchers.IO) {
+    override suspend fun callAIModel(prompt: String): String = withContext(Dispatchers.IO) {
         try {
             println("Gemini API 호출 중...")
             val model = config.modelName ?: "gemini-pro"
 
             val apiResponse =
-                httpClient.post("https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent") {
-                    header("Authorization", "Bearer ${config.apiKey}")
+                httpClient.post("https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=${config.apiKey}") {
                     contentType(ContentType.Application.Json)
                     setBody(
                         GeminiRequest(

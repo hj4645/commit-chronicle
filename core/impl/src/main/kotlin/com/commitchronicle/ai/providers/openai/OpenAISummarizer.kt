@@ -43,7 +43,7 @@ class OpenAISummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
         return callAIModel(buildChangelogPrompt(commits, groupByType))
     }
 
-    override protected suspend fun callAIModel(prompt: String): String = withContext(Dispatchers.IO) {
+    override suspend fun callAIModel(prompt: String): String = withContext(Dispatchers.IO) {
         try {
             println("OpenAI API 호출 중...")
             var model = config.modelName ?: "gpt-3.5-turbo"

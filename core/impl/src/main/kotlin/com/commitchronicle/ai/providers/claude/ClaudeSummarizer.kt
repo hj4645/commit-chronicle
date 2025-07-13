@@ -48,7 +48,7 @@ class ClaudeSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
         return callAIModel(buildChangelogPrompt(commits, groupByType))
     }
 
-    override protected suspend fun callAIModel(prompt: String): String = withContext(Dispatchers.IO) {
+    override suspend fun callAIModel(prompt: String): String = withContext(Dispatchers.IO) {
         try {
             println("Claude API 호출 중...")
 
