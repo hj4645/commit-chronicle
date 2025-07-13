@@ -1,7 +1,11 @@
 package com.commitchronicle.intellij
 
 import com.commitchronicle.ai.factory.AISummarizerFactory
+import com.commitchronicle.ai.AIProviderType
+import com.commitchronicle.ai.providers.openai.config.OpenAIConfig
 import com.commitchronicle.git.JGitAnalyzer
+import com.commitchronicle.template.TemplateEngineFactory
+import com.commitchronicle.language.Locale
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
@@ -181,7 +185,8 @@ class SummarizeCommitsAction : AnAction("커밋 요약 생성") {
         coroutineService.launchBackground {
             try {
                 val gitAnalyzer = JGitAnalyzer(repoPath)
-                val aiSummarizer = AISummarizerFactory.create(apiKey)
+                val config = OpenAIConfig(apiKey = apiKey, locale = Locale.KOREAN)
+                val aiSummarizer = AISummarizerFactory.create(config, AIProviderType.OPENAI)
                 
                 // suspend 함수 호출
                 val commits = gitAnalyzer.getCommits(7) // 최근 7일간의 커밋
@@ -251,7 +256,8 @@ class GeneratePRAction : AnAction("PR 초안 생성") {
         coroutineService.launchBackground {
             try {
                 val gitAnalyzer = JGitAnalyzer(repoPath)
-                val aiSummarizer = AISummarizerFactory.create(apiKey)
+                val config = OpenAIConfig(apiKey = apiKey, locale = Locale.KOREAN)
+                val aiSummarizer = AISummarizerFactory.create(config, AIProviderType.OPENAI)
                 
                 // suspend 함수 호출
                 val commits = gitAnalyzer.getCommits(7) // 최근 7일간의 커밋
@@ -262,8 +268,30 @@ class GeneratePRAction : AnAction("PR 초안 생성") {
                     return@launchBackground
                 }
                 
-                // suspend 함수 호출
-                val prDraft = aiSummarizer.generatePRDraft(commits, title)
+                // GitHub 템플릿 자동 감지 시도
+                val templateDetector = TemplateEngineFactory.createGitHubTemplateDetector()
+                val githubTemplatePath = templateDetector.findPRTemplate(repoPath)
+                
+                val prDraft = if (githubTemplatePath != null) {
+                    CommitChroniclePlugin.invokeLater(project) {
+                        Messages.showInfoMessage(project, "GitHub PR 템플릿을 감지했습니다: $githubTemplatePath", "CommitChronicle")
+                    }
+                    
+                    val templateParser = TemplateEngineFactory.createGitHubTemplateParser()
+                    val templateContent = templateDetector.readTemplateContent(githubTemplatePath)
+                    
+                    if (templateContent != null) {
+                        templateParser.parseAndRender(templateContent, commits, title)
+                    } else {
+                        CommitChroniclePlugin.invokeLater(project) {
+                            Messages.showInfoMessage(project, "템플릿 파일을 읽을 수 없습니다. AI 생성 모드로 전환합니다.", "CommitChronicle")
+                        }
+                        aiSummarizer.generatePRDraft(commits, title)
+                    }
+                } else {
+                    // GitHub 템플릿이 없으면 AI 생성 사용
+                    aiSummarizer.generatePRDraft(commits, title)
+                }
                 
                 CommitChroniclePlugin.invokeLater(project) {
                     CommitChroniclePlugin.showNotification(
@@ -314,7 +342,8 @@ class GenerateChangelogAction : AnAction("변경 로그 생성") {
         coroutineService.launchBackground {
             try {
                 val gitAnalyzer = JGitAnalyzer(repoPath)
-                val aiSummarizer = AISummarizerFactory.create(apiKey)
+                val config = OpenAIConfig(apiKey = apiKey, locale = Locale.KOREAN)
+                val aiSummarizer = AISummarizerFactory.create(config, AIProviderType.OPENAI)
                 
                 // suspend 함수 호출
                 val commits = gitAnalyzer.getCommits(30) // 최근 30일간의 커밋
