@@ -1,17 +1,17 @@
 # Commit Chronicle
 
-AI를 활용한 Git 커밋 분석 및 요약 라이브러리입니다. 커밋 히스토리를 분석하여 Pull Request 초안, 변경 로그, 커밋 요약을 자동으로 생성합니다.
+AIを活用したGitコミット分析・要約ライブラリです。コミット履歴を分析してPull Requestドラフト、変更ログ、コミット要約を自動生成します。
 
-## 🚀 주요 기능
+## 🚀 主な機能
 
-- **AI 기반 커밋 분석**: OpenAI, Claude, Gemini, Perplexity, DeepSeek 지원
-- **PR 초안 자동 생성**: 커밋 히스토리 기반 PR 템플릿 생성
-- **다국어 지원**: 한국어, 영어, 중국어, 일본어
-- **GitHub 템플릿 감지**: 기존 PR 템플릿 자동 적용
-- **브랜치 검증**: main/master 브랜치 경고 및 의미있는 커밋 필터링
-- **CLI 도구**: 명령줄에서 바로 사용 가능
+- **AIベースのコミット分析**: OpenAI、Claude、Gemini、Perplexity、DeepSeekをサポート
+- **自動PR下書き生成**: コミット履歴に基づいたPRテンプレート作成
+- **多言語サポート**: 韓国語、英語、中国語、日本語
+- **GitHubテンプレート検出**: 既存のPRテンプレートを自動適用
+- **ブランチ検証**: main/masterブランチでの警告と意味のあるコミットのフィルタリング
+- **CLIツール**: すぐに使えるコマンドラインインターフェース
 
-## 📦 설치 방법
+## 📦 インストール方法
 
 ### Gradle
 
@@ -44,56 +44,56 @@ dependencies {
 </dependencies>
 ```
 
-## 🛠️ 사용 방법
+## 🛠️ 使用方法
 
-### CLI 사용법
+### CLI使用法
 
-#### 1. 초기 설정
+#### 1. 初期設定
 
 ```bash
 java -jar commitchronicle-0.1.0.jar
 ```
 
-첫 실행 시 대화형 설정이 시작됩니다:
-- 언어 선택 (한국어, English, 中文, 日本語)
-- AI 모델 선택 (OpenAI, Claude, Gemini, Perplexity, DeepSeek)
-- API 키 입력
+初回実行時にインタラクティブな設定が開始されます：
+- 言語選択（韓国語、English、中文、日本語）
+- AIモデル選択（OpenAI、Claude、Gemini、Perplexity、DeepSeek）
+- APIキー入力
 
-#### 2. 커밋 요약 생성
+#### 2. コミット要約生成
 
 ```bash
-# 기본 설정으로 요약 (최근 7일, 최대 50개 커밋)
+# デフォルト設定（過去7日間、最大50コミット）
 java -jar commitchronicle-0.1.0.jar summarize
 
-# 옵션 지정
+# オプション指定
 java -jar commitchronicle-0.1.0.jar summarize -d 14 -l 100
 java -jar commitchronicle-0.1.0.jar summarize --path /path/to/repo
 ```
 
-#### 3. PR 초안 생성
+#### 3. PR下書き生成
 
 ```bash
-# 현재 브랜치의 PR 초안 생성
+# 現在のブランチのPR下書きを生成
 java -jar commitchronicle-0.1.0.jar pr
 
-# 옵션 지정
+# オプション指定
 java -jar commitchronicle-0.1.0.jar pr -d 7 -l 20
 ```
 
-#### 4. 설정 관리
+#### 4. 設定管理
 
 ```bash
-# 현재 설정 보기
+# 現在の設定を表示
 java -jar commitchronicle-0.1.0.jar settings --show
 
-# 설정 변경
+# 設定を変更
 java -jar commitchronicle-0.1.0.jar settings
 
-# 설정 초기화
+# 設定をリセット
 java -jar commitchronicle-0.1.0.jar settings --reset
 ```
 
-### 라이브러리 사용법
+### ライブラリ使用法
 
 ```kotlin
 import com.commitchronicle.git.GitAnalyzerFactory
@@ -102,78 +102,78 @@ import com.commitchronicle.ai.providers.openai.config.OpenAIConfig
 import com.commitchronicle.ai.AIProviderType
 import com.commitchronicle.language.Locale
 
-// Git 분석기 생성
+// Git分析器を作成
 val gitAnalyzer = GitAnalyzerFactory.create("/path/to/repo")
 
-// AI 설정
+// AI設定
 val aiConfig = OpenAIConfig(
     apiKey = "your-api-key",
-    locale = Locale.KOREAN
+    locale = Locale.JAPANESE
 )
 val aiSummarizer = AISummarizerFactory.create(aiConfig, AIProviderType.OPENAI)
 
-// 커밋 분석
-val commits = gitAnalyzer.getCommits(7) // 최근 7일
+// コミット分析
+val commits = gitAnalyzer.getCommits(7) // 過去7日間
 val summary = aiSummarizer.summarize(commits)
 val prDraft = aiSummarizer.generatePRDraft(commits)
 
-println("요약: $summary")
-println("PR 초안: $prDraft")
+println("要約: $summary")
+println("PR下書き: $prDraft")
 ```
 
-## 🔧 설정
+## 🔧 設定
 
-설정은 `~/.commit-chronicle/config.json`에 저장됩니다:
+設定は `~/.commit-chronicle/config.json` に保存されます：
 
 ```json
 {
   "apiKey": "your-api-key",
   "providerType": "openai",
-  "locale": "ko",
+  "locale": "ja",
   "defaultDays": 7,
   "defaultLimit": 50
 }
 ```
 
-## 🤖 지원 AI 모델
+## 🤖 サポートされるAIモデル
 
-| 제공업체 | 모델 |
-|---------|------|
+| プロバイダー | モデル |
+|-------------|--------|
 | OpenAI | gpt-4o, gpt-4o-mini, gpt-4-turbo |
 | Claude | claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022 |
 | Gemini | gemini-2.0-flash-exp, gemini-1.5-flash, gemini-1.5-pro |
 | Perplexity | llama-3.1-sonar-large-128k-online, llama-3.1-sonar-small-128k-online |
 | DeepSeek | deepseek-chat, deepseek-coder |
 
-## 📁 프로젝트 구조
+## 📁 プロジェクト構造
 
 ```
 commit-chronicle/
 ├── core/
-│   ├── api/           # 인터페이스 및 모델
-│   └── impl/          # 구현체
-├── cli/               # CLI 도구
-└── build.gradle.kts   # 빌드 설정
+│   ├── api/           # インターフェースとモデル
+│   └── impl/          # 実装
+├── cli/               # CLIツール
+└── build.gradle.kts   # ビルド設定
 ```
 
-## 🌐 다국어 지원
+## 🌐 多言語サポート
 
 - **한국어** (ko)
 - **English** (en)
 - **中文** (zh)
 - **日本語** (ja)
 
-## 🔒 보안
+## 🔒 セキュリティ
 
-- API 키는 사용자 홈 디렉토리에 안전하게 저장
-- JAR 파일에 민감한 정보 포함되지 않음
-- 사용자별 독립적인 설정 관리
+- APIキーはユーザーのホームディレクトリに安全に保存
+- JARファイルに機密情報は含まれません
+- ユーザーごとの独立した設定管理
 
-## 📄 라이센스
+## 📄 ライセンス
 
 MIT License
 
-## 🤝 기여하기
+## 🤝 貢献
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -181,7 +181,7 @@ MIT License
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📞 지원
+## 📞 サポート
 
 - Issues: [GitHub Issues](https://github.com/eulji/commit-chronicle/issues)
-- Documentation: [Wiki](https://github.com/eulji/commit-chronicle/wiki)
+- Documentation: [Wiki](https://github.com/eulji/commit-chronicle/wiki) 

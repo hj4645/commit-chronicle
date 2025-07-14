@@ -32,6 +32,6 @@ subprojects {
     }
 }
 
-tasks.register("build") {
-    dependsOn(":cli:build")
-}
+
+
+

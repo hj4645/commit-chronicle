@@ -1,17 +1,17 @@
 # Commit Chronicle
 
-AI를 활용한 Git 커밋 분석 및 요약 라이브러리입니다. 커밋 히스토리를 분석하여 Pull Request 초안, 변경 로그, 커밋 요약을 자동으로 생성합니다.
+基于AI的Git提交分析和摘要库。通过分析提交历史自动生成Pull Request草稿、更改日志和提交摘要。
 
-## 🚀 주요 기능
+## 🚀 主要功能
 
-- **AI 기반 커밋 분석**: OpenAI, Claude, Gemini, Perplexity, DeepSeek 지원
-- **PR 초안 자동 생성**: 커밋 히스토리 기반 PR 템플릿 생성
-- **다국어 지원**: 한국어, 영어, 중국어, 일본어
-- **GitHub 템플릿 감지**: 기존 PR 템플릿 자동 적용
-- **브랜치 검증**: main/master 브랜치 경고 및 의미있는 커밋 필터링
-- **CLI 도구**: 명령줄에서 바로 사용 가능
+- **AI驱动的提交分析**: 支持OpenAI、Claude、Gemini、Perplexity、DeepSeek
+- **自动PR草稿生成**: 基于提交历史创建PR模板
+- **多语言支持**: 韩语、英语、中文、日语
+- **GitHub模板检测**: 自动应用现有的PR模板
+- **分支验证**: 在main/master分支上警告并过滤有意义的提交
+- **CLI工具**: 即用型命令行界面
 
-## 📦 설치 방법
+## 📦 安装方法
 
 ### Gradle
 
@@ -44,56 +44,56 @@ dependencies {
 </dependencies>
 ```
 
-## 🛠️ 사용 방법
+## 🛠️ 使用方法
 
-### CLI 사용법
+### CLI使用
 
-#### 1. 초기 설정
+#### 1. 初始设置
 
 ```bash
 java -jar commitchronicle-0.1.0.jar
 ```
 
-첫 실행 시 대화형 설정이 시작됩니다:
-- 언어 선택 (한국어, English, 中文, 日本語)
-- AI 모델 선택 (OpenAI, Claude, Gemini, Perplexity, DeepSeek)
-- API 키 입력
+首次运行时启动交互式设置：
+- 语言选择（韩语、English、中文、日本語）
+- AI模型选择（OpenAI、Claude、Gemini、Perplexity、DeepSeek）
+- API密钥输入
 
-#### 2. 커밋 요약 생성
+#### 2. 生成提交摘要
 
 ```bash
-# 기본 설정으로 요약 (최근 7일, 최대 50개 커밋)
+# 默认设置（最近7天，最多50个提交）
 java -jar commitchronicle-0.1.0.jar summarize
 
-# 옵션 지정
+# 使用选项
 java -jar commitchronicle-0.1.0.jar summarize -d 14 -l 100
 java -jar commitchronicle-0.1.0.jar summarize --path /path/to/repo
 ```
 
-#### 3. PR 초안 생성
+#### 3. 生成PR草稿
 
 ```bash
-# 현재 브랜치의 PR 초안 생성
+# 为当前分支生成PR草稿
 java -jar commitchronicle-0.1.0.jar pr
 
-# 옵션 지정
+# 使用选项
 java -jar commitchronicle-0.1.0.jar pr -d 7 -l 20
 ```
 
-#### 4. 설정 관리
+#### 4. 设置管理
 
 ```bash
-# 현재 설정 보기
+# 显示当前设置
 java -jar commitchronicle-0.1.0.jar settings --show
 
-# 설정 변경
+# 更新设置
 java -jar commitchronicle-0.1.0.jar settings
 
-# 설정 초기화
+# 重置设置
 java -jar commitchronicle-0.1.0.jar settings --reset
 ```
 
-### 라이브러리 사용법
+### 库使用
 
 ```kotlin
 import com.commitchronicle.git.GitAnalyzerFactory
@@ -102,78 +102,78 @@ import com.commitchronicle.ai.providers.openai.config.OpenAIConfig
 import com.commitchronicle.ai.AIProviderType
 import com.commitchronicle.language.Locale
 
-// Git 분석기 생성
+// 创建Git分析器
 val gitAnalyzer = GitAnalyzerFactory.create("/path/to/repo")
 
-// AI 설정
+// AI配置
 val aiConfig = OpenAIConfig(
     apiKey = "your-api-key",
-    locale = Locale.KOREAN
+    locale = Locale.CHINESE
 )
 val aiSummarizer = AISummarizerFactory.create(aiConfig, AIProviderType.OPENAI)
 
-// 커밋 분석
-val commits = gitAnalyzer.getCommits(7) // 최근 7일
+// 分析提交
+val commits = gitAnalyzer.getCommits(7) // 最近7天
 val summary = aiSummarizer.summarize(commits)
 val prDraft = aiSummarizer.generatePRDraft(commits)
 
-println("요약: $summary")
-println("PR 초안: $prDraft")
+println("摘要: $summary")
+println("PR草稿: $prDraft")
 ```
 
-## 🔧 설정
+## 🔧 配置
 
-설정은 `~/.commit-chronicle/config.json`에 저장됩니다:
+设置存储在 `~/.commit-chronicle/config.json`：
 
 ```json
 {
   "apiKey": "your-api-key",
   "providerType": "openai",
-  "locale": "ko",
+  "locale": "zh",
   "defaultDays": 7,
   "defaultLimit": 50
 }
 ```
 
-## 🤖 지원 AI 모델
+## 🤖 支持的AI模型
 
-| 제공업체 | 모델 |
-|---------|------|
+| 提供商 | 模型 |
+|-------|------|
 | OpenAI | gpt-4o, gpt-4o-mini, gpt-4-turbo |
 | Claude | claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022 |
 | Gemini | gemini-2.0-flash-exp, gemini-1.5-flash, gemini-1.5-pro |
 | Perplexity | llama-3.1-sonar-large-128k-online, llama-3.1-sonar-small-128k-online |
 | DeepSeek | deepseek-chat, deepseek-coder |
 
-## 📁 프로젝트 구조
+## 📁 项目结构
 
 ```
 commit-chronicle/
 ├── core/
-│   ├── api/           # 인터페이스 및 모델
-│   └── impl/          # 구현체
-├── cli/               # CLI 도구
-└── build.gradle.kts   # 빌드 설정
+│   ├── api/           # 接口和模型
+│   └── impl/          # 实现
+├── cli/               # CLI工具
+└── build.gradle.kts   # 构建配置
 ```
 
-## 🌐 다국어 지원
+## 🌐 多语言支持
 
 - **한국어** (ko)
 - **English** (en)
 - **中文** (zh)
 - **日本語** (ja)
 
-## 🔒 보안
+## 🔒 安全性
 
-- API 키는 사용자 홈 디렉토리에 안전하게 저장
-- JAR 파일에 민감한 정보 포함되지 않음
-- 사용자별 독립적인 설정 관리
+- API密钥安全存储在用户主目录
+- JAR文件中不包含敏感信息
+- 每个用户独立的配置管理
 
-## 📄 라이센스
+## 📄 许可证
 
 MIT License
 
-## 🤝 기여하기
+## 🤝 贡献
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -181,7 +181,7 @@ MIT License
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📞 지원
+## 📞 支持
 
 - Issues: [GitHub Issues](https://github.com/eulji/commit-chronicle/issues)
-- Documentation: [Wiki](https://github.com/eulji/commit-chronicle/wiki)
+- Documentation: [Wiki](https://github.com/eulji/commit-chronicle/wiki) 
