@@ -3,8 +3,6 @@ jdk:
   - openjdk11
   - openjdk17
   - openjdk21
-  - openjdk22
-  - openjdk23
   - openjdk24
 
 before_install:
