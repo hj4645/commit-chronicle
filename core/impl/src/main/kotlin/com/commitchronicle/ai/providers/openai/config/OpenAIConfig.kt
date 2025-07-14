@@ -8,7 +8,7 @@ import com.commitchronicle.language.Locale
  */
 data class OpenAIConfig(
     override val apiKey: String,
-    override val modelName: String? = "gpt-3.5-turbo",
+    override val modelName: String? = "gpt-4o",
     override val locale: Locale? = null,
     val temperature: Double = 0.7,
     val maxTokens: Int = 2000,

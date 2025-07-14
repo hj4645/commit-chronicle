@@ -8,7 +8,7 @@ import com.commitchronicle.language.Locale
  */
 data class GeminiConfig(
     override val apiKey: String,
-    override val modelName: String? = "gemini-pro",
+    override val modelName: String? = "gemini-2.0-flash",
     override val locale: Locale? = null,
     val temperature: Double = 0.7,
     val maxOutputTokens: Int = 2048,

@@ -10,7 +10,9 @@ data class UserConfig(
     val apiKey: String? = null,
     val providerType: String? = null,
     val modelName: String? = null,
-    val locale: String? = null
+    val locale: String? = null,
+    val defaultDays: Int = 7,
+    val defaultLimit: Int = 50
 ) {
     fun getLocale(): Locale? = locale?.let { Locale.fromCode(it) }
 
@@ -26,7 +28,7 @@ data class UserConfig(
             return try {
                 json.decodeFromString<UserConfig>(configFile.readText())
             } catch (e: Exception) {
-                println("설정 파일 로드 중 오류 발생: ${e.message}")
+                println("Error loading config file: ${e.message}")
                 UserConfig()
             }
         }
@@ -38,7 +40,7 @@ data class UserConfig(
                 }
                 configFile.writeText(json.encodeToString(config))
             } catch (e: Exception) {
-                println("설정 파일 저장 중 오류 발생: ${e.message}")
+                println("Error saving config file: ${e.message}")
             }
         }
     }

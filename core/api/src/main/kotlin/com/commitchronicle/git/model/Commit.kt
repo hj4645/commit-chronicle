@@ -12,7 +12,8 @@ data class Commit(
     val author: String,
     val email: String,
     val date: ZonedDateTime,
-    val changes: List<FileChange> = emptyList()
+    val changes: List<FileChange> = emptyList(),
+    val isMergeCommit: Boolean = false
 )
 
 /**

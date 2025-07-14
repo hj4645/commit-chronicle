@@ -16,6 +16,7 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 /**
  * Google Gemini API를 사용하여 커밋 요약을 생성하는 AISummarizer 구현체
@@ -23,7 +24,9 @@ import kotlinx.serialization.Serializable
 class GeminiSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
     private val httpClient = HttpClient(CIO) {
         install(ContentNegotiation) {
-            json()
+            json(Json {
+                ignoreUnknownKeys = true
+            })
         }
     }
 
@@ -44,8 +47,7 @@ class GeminiSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
 
     override suspend fun callAIModel(prompt: String): String = withContext(Dispatchers.IO) {
         try {
-            println("Gemini API 호출 중...")
-            val model = config.modelName ?: "gemini-pro"
+            val model = config.modelName ?: "gemini-2.0-flash"
 
             val apiResponse =
                 httpClient.post("https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=${config.apiKey}") {
@@ -59,23 +61,22 @@ class GeminiSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
                 }
 
             val responseText = apiResponse.body<String>()
-            println("API 응답: $responseText")
 
             if (!responseText.contains("error")) {
                 try {
                     val response: GeminiResponse = apiResponse.body()
                     return@withContext response.candidates.firstOrNull()?.content?.parts?.firstOrNull()?.text
-                        ?: "응답을 생성할 수 없습니다."
+                        ?: "Unable to generate response."
                 } catch (e: Exception) {
-                    println("응답 파싱 오류: ${e.message}")
-                    return@withContext "응답 파싱 오류: ${e.message}"
+                    println("Response parsing error: ${e.message}")
+                    return@withContext "Response parsing error: ${e.message}"
                 }
             } else {
-                return@withContext "API 응답 오류: $responseText"
+                return@withContext "API response error: $responseText"
             }
         } catch (e: Exception) {
-            println("API 오류 상세: ${e.stackTraceToString()}")
-            return@withContext "Gemini API 호출 중 오류 발생: ${e.message}"
+            println("API error details: ${e.stackTraceToString()}")
+            return@withContext "Error calling Gemini API: ${e.message}"
         }
     }
 
@@ -88,7 +89,8 @@ class GeminiSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
 
     @Serializable
     data class GeminiContent(
-        val parts: List<GeminiPart>
+        val parts: List<GeminiPart>,
+        val role: String? = null
     )
 
     @Serializable

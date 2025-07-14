@@ -30,4 +30,11 @@ interface GitAnalyzer {
      * @return 커밋 목록
      */
     suspend fun getRecentCommits(limit: Int): List<Commit>
+
+        /**
+     * 현재 브랜치명을 가져옵니다.
+     *
+     * @return 현재 브랜치명
+     */
+    suspend fun getCurrentBranch(): String
 } 

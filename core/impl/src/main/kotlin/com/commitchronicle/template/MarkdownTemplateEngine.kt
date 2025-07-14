@@ -136,7 +136,7 @@ class MarkdownTemplateEngine : TemplateEngine {
         
         for (part in parts) {
             current = when (current) {
-                is Map<*, *> -> (current as Map<*, *>)[part]
+                is Map<*, *> -> current[part]
                 else -> return null
             }
         }

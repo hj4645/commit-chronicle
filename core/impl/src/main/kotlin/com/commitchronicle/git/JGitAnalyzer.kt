@@ -81,10 +81,20 @@ class JGitAnalyzer(private val repoPath: String) : GitAnalyzer {
         }
     }
 
+    override suspend fun getCurrentBranch(): String = withContext(Dispatchers.IO) {
+        try {
+            return@withContext repository.branch
+        } catch (e: Exception) {
+            println("Error getting current branch: ${e.message}")
+            return@withContext "unknown"
+        }
+    }
+
     private fun mapToCommit(revCommit: RevCommit): Commit {
         val id = revCommit.name
         val parentId = if (revCommit.parentCount > 0) revCommit.getParent(0).name else null
-        val changes = if (parentId != null) {
+        val isMergeCommit = revCommit.parentCount > 1
+        val changes = if (parentId != null && !isMergeCommit) {
             getChangesForCommit(id, parentId)
         } else {
             emptyList()
@@ -100,7 +110,8 @@ class JGitAnalyzer(private val repoPath: String) : GitAnalyzer {
                 revCommit.authorIdent.`when`.toInstant(),
                 ZoneId.systemDefault()
             ),
-            changes = changes
+            changes = changes,
+            isMergeCommit = isMergeCommit
         )
     }
 
@@ -120,7 +131,7 @@ class JGitAnalyzer(private val repoPath: String) : GitAnalyzer {
                 diffFormatter.setDetectRenames(true)
 
                 val diffs = diffFormatter.scan(oldTreeParser, newTreeParser)
-                return diffs.map { mapToFileChange(it, diffFormatter) }
+                return diffs.map { mapToFileChange(it) }
             }
         } catch (e: Exception) {
             println("Error getting changes for commit: ${e.message}")
@@ -128,19 +139,17 @@ class JGitAnalyzer(private val repoPath: String) : GitAnalyzer {
         }
     }
 
-    private fun mapToFileChange(diffEntry: DiffEntry, diffFormatter: DiffFormatter): FileChange {
-        var diff = ""
-
-        try {
+    private fun mapToFileChange(diffEntry: DiffEntry): FileChange {
+        val diff = try {
             ByteArrayOutputStream().use { byteOut ->
                 DiffFormatter(byteOut).use { formatter ->
                     formatter.setRepository(repository)
                     formatter.format(diffEntry)
-                    diff = String(byteOut.toByteArray(), StandardCharsets.UTF_8)
+                    String(byteOut.toByteArray(), StandardCharsets.UTF_8)
                 }
             }
         } catch (e: Exception) {
-            diff = "Error generating diff: ${e.message}"
+            "Error generating diff: ${e.message}"
         }
 
         // 간단한 방식으로 추가된 라인과 삭제된 라인 계산

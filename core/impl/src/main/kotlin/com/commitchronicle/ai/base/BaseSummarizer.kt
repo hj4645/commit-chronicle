@@ -58,7 +58,6 @@ abstract class BaseSummarizer(protected val config: AIProviderConfig) : AISummar
      */
     protected fun buildPRPrompt(commits: List<Commit>, title: String?): String {
         val commitsText = formatCommitsForPrompt(commits)
-        val promptTitle = title ?: "Generate a title for this PR"
         val language = locale.languageName
         
         return """

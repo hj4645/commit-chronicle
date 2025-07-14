@@ -20,4 +20,7 @@ dependencies {
 
     // Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    
+    // SLF4J NOP to suppress warnings
+    implementation("org.slf4j:slf4j-nop:1.7.36")
 }

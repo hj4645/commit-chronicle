@@ -8,7 +8,7 @@ import com.commitchronicle.language.Locale
  */
 data class PerplexityConfig(
     override val apiKey: String,
-    override val modelName: String? = "pplx-7b-online",
+    override val modelName: String? = "llama-3.1-sonar-small-128k-online",
     override val locale: Locale? = null,
     val temperature: Double = 0.7,
     val maxTokens: Int = 2000,
