@@ -50,36 +50,58 @@ application {
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            // Use shadowJar as the main artifact
             artifact(tasks.shadowJar)
-            
-            groupId = "com.commitchronicle"
+
+            groupId = "com.github.hj4645"
             artifactId = "commit-chronicle"
             version = "0.1.0"
-            
+
             pom {
                 name.set("Commit Chronicle")
-                description.set("AI-powered Git commit analysis and summarization library")
-                url.set("https://github.com/eulji/commit-chronicle")
-                
+                description.set("🚀 AI-powered Git commit analysis and summarization tool with GitHub template support. Generate PR drafts and commit summaries")
+                url.set("https://github.com/hj4645/commit-chronicle")
+
+                properties.set(mapOf(
+                    "maven.compiler.source" to "8",
+                    "maven.compiler.target" to "8",
+                    "project.build.sourceEncoding" to "UTF-8",
+                    "kotlin.version" to "1.8.0"
+                ))
+
                 licenses {
                     license {
                         name.set("MIT License")
                         url.set("https://opensource.org/licenses/MIT")
+                        distribution.set("repo")
                     }
                 }
-                
+
                 developers {
                     developer {
-                        id.set("eulji")
-                        name.set("Eulji")
+                        id.set("hj4645")
+                        name.set("HJPark")
+                        email.set("hjpark4645@gmail.com")
+                        url.set("https://github.com/hj4645")
+                        roles.set(listOf("Developer", "Maintainer"))
+                        timezone.set("Asia/Seoul")
                     }
                 }
-                
+
                 scm {
-                    connection.set("scm:git:git://github.com/eulji/commit-chronicle.git")
-                    developerConnection.set("scm:git:ssh://github.com/eulji/commit-chronicle.git")
-                    url.set("https://github.com/eulji/commit-chronicle")
+                    connection.set("scm:git:git://github.com/hj4645/commit-chronicle.git")
+                    developerConnection.set("scm:git:ssh://git@github.com:hj4645/commit-chronicle.git")
+                    url.set("https://github.com/hj4645/commit-chronicle")
+                    tag.set("v0.1.0")
+                }
+
+                issueManagement {
+                    system.set("GitHub Issues")
+                    url.set("https://github.com/hj4645/commit-chronicle/issues")
+                }
+
+                ciManagement {
+                    system.set("GitHub Actions")
+                    url.set("https://github.com/hj4645/commit-chronicle/actions")
                 }
             }
         }
