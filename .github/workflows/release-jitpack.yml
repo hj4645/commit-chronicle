@@ -33,10 +33,10 @@ jobs:
         path: |
           ~/.gradle/caches
           ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-jdk${{ matrix.java-version }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-jdk${{ matrix.java-version }}-
-          ${{ runner.os }}-gradle-
+                  key: ${{ runner.os }}-gradle-release-jdk${{ matrix.java-version }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-release-jdk${{ matrix.java-version }}-
+            ${{ runner.os }}-gradle-release-
     
     - name: Run tests
       run: ./gradlew test
