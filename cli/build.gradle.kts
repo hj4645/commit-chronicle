@@ -23,11 +23,6 @@ tasks {
         manifest {
             attributes["Main-Class"] = "com.commitchronicle.cli.MainKt"
         }
-        mergeServiceFiles()
-    }
-
-    build {
-        dependsOn(shadowJar)
     }
 }
 
@@ -51,16 +46,11 @@ application {
     mainClass.set("com.commitchronicle.cli.MainKt")
 }
 
-// Publishing configuration for JitPack
+// Configure publishing for JitPack
 publishing {
     publications {
         create<MavenPublication>("maven") {
             artifact(tasks.shadowJar)
-
-            artifacts.removeAll { it.classifier == null }
-            artifact(tasks.shadowJar) {
-                classifier = null
-            }
 
             groupId = "com.github.hj4645"
             artifactId = "commit-chronicle"
@@ -68,7 +58,7 @@ publishing {
 
             pom {
                 name.set("Commit Chronicle")
-                description.set("🚀 AI-powered Git commit analysis and summarization tool with GitHub template support. Generate PR drafts, changelogs, and commit summaries using OpenAI, Claude, Gemini, and more.")
+                description.set("🚀 AI-powered Git commit analysis and summarization tool with GitHub template support. Generate PR drafts and commit summaries")
                 url.set("https://github.com/hj4645/commit-chronicle")
 
                 properties.set(mapOf(
