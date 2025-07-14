@@ -1,0 +1,18 @@
+jdk:
+  - openjdk8
+  - openjdk11
+  - openjdk17
+  - openjdk21
+  - openjdk22
+  - openjdk23
+  - openjdk24
+
+before_install:
+  - echo "Setting up build environment"
+  - ./gradlew clean
+
+install:
+  - ./gradlew publishToMavenLocal
+
+env:
+  GRADLE_OPTS: "-Xmx2048m -XX:MaxMetaspaceSize=512m" 
