@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.eulji:commit-chronicle:v0.1.0")
+    implementation("com.github.hj4645:commit-chronicle:v0.1.0")
 }
 ```
 
@@ -37,7 +37,7 @@ dependencies {
 
 <dependencies>
     <dependency>
-        <groupId>com.github.eulji</groupId>
+        <groupId>com.github.hj4645</groupId>
         <artifactId>commit-chronicle</artifactId>
         <version>v0.1.0</version>
     </dependency>
@@ -183,5 +183,5 @@ MIT License
 
 ## 📞 Support
 
-- Issues: [GitHub Issues](https://github.com/eulji/commit-chronicle/issues)
-- Documentation: [Wiki](https://github.com/eulji/commit-chronicle/wiki) 
+- Issues: [GitHub Issues](https://github.com/hj4645/commit-chronicle/issues)
+- Documentation: [Wiki](https://github.com/hj4645/commit-chronicle/wiki) 
