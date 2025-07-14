@@ -1,18 +1,99 @@
-name: Release to JitPack
+name: JitPack Release
 
 permissions:
   contents: write
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        java-version: [8, 11, 17, 21, 24]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK ${{ matrix.java-version }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ matrix.java-version }}
+        distribution: 'temurin'
+    
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+                  key: ${{ runner.os }}-gradle-release-jdk${{ matrix.java-version }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-release-jdk${{ matrix.java-version }}-
+            ${{ runner.os }}-gradle-release-
+    
+    - name: Run tests
+      run: ./gradlew test
+    
+    - name: Build with Gradle
+      run: ./gradlew build
+    
+    - name: Test JitPack publish
+      run: ./gradlew publishToMavenLocal
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: matrix.java-version == 8
+      with:
+        name: jar-artifacts
+        path: |
+          */build/libs/*.jar
+          !*/build/libs/*-sources.jar
+          !*/build/libs/*-javadoc.jar
+
+  jitpack-compatibility:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 8
+      uses: actions/setup-java@v4
+      with:
+        java-version: 8
+        distribution: 'temurin'
+    
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-build-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+    
+    - name: Test JitPack build simulation
+      run: |
+        chmod +x gradlew
+        ./gradlew clean
+        ./gradlew publishToMavenLocal
+        echo "JitPack compatibility verified"
+
   release:
     runs-on: ubuntu-latest
+    needs: [test, jitpack-compatibility]
+    # 보안: 배포 토큰 있을 때만 배포
+    if: secrets.DEPLOY_TOKEN != ''
     env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
     steps:
       - name: Checkout repository
@@ -20,11 +101,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 24
+      - name: Set up JDK 8
         uses: actions/setup-java@v4
         with:
-          java-version: '24'
+          java-version: '8'
           distribution: 'temurin'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-release-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-jdk8-
+            ${{ runner.os }}-gradle-
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
@@ -32,14 +124,14 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build with Gradle
+      - name: Final build for release
         run: ./gradlew build
 
       - name: Determine PR title for tag
         id: find_pr
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.DEPLOY_TOKEN }}
           script: |
             const { data: pulls } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
               owner: context.repo.owner,
@@ -53,7 +145,7 @@ jobs:
               return;
             }
             const prTitle = pulls[0].title.trim();
-            // PR 제목을 태그로 사용하되, 특수문자 제거
+      
             const tag = prTitle.replace(/[^a-zA-Z0-9.-]/g, '-').replace(/-+/g, '-');
             core.setOutput("tag", tag);
 
@@ -69,7 +161,7 @@ jobs:
       - name: Create GitHub Release
         uses: actions/create-release@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.DEPLOY_TOKEN }}
           tag_name: ${{ steps.find_pr.outputs.tag }}
           release_name: "${{ steps.find_pr.outputs.tag }}"
           body: |
@@ -82,7 +174,7 @@ jobs:
             }
             
             dependencies {
-                implementation 'com.github.eulji:commit-chronicle:${{ steps.find_pr.outputs.tag }}'
+                implementation 'com.github.hj4645:commit-chronicle:${{ steps.find_pr.outputs.tag }}'
             }
             ```
           draft: false
