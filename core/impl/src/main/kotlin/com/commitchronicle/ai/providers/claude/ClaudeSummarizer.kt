@@ -23,42 +23,45 @@ import kotlinx.serialization.Serializable
 class ClaudeSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
     private val httpClient = HttpClient(CIO) {
         install(ContentNegotiation) {
-            json()
+            json(kotlinx.serialization.json.Json {
+                ignoreUnknownKeys = true
+            })
         }
     }
 
     override suspend fun summarize(commits: List<Commit>): String {
         if (commits.isEmpty()) {
-            return "변경 사항이 없습니다."
+            return "No changes found."
         }
         return callAIModel(buildSummaryPrompt(commits))
     }
 
     override suspend fun generatePRDraft(commits: List<Commit>, title: String?): String {
         if (commits.isEmpty()) {
-            return "변경 사항이 없습니다."
+            return "No changes found."
         }
         return callAIModel(buildPRPrompt(commits, title))
     }
 
     override suspend fun generateChangelog(commits: List<Commit>, groupByType: Boolean): String {
         if (commits.isEmpty()) {
-            return "변경 사항이 없습니다."
+            return "No changes found."
         }
         return callAIModel(buildChangelogPrompt(commits, groupByType))
     }
 
     override suspend fun callAIModel(prompt: String): String = withContext(Dispatchers.IO) {
         try {
-            println("Claude API 호출 중...")
+            println("Calling Claude API...")
 
-            // 모델 설정 (기본값: claude-3-sonnet-20240229)
-            val model = config.modelName ?: "claude-3-sonnet-20240229"
+            // Model configuration (default: claude-3-5-sonnet-20241022)
+            val model = config.modelName ?: "claude-3-5-sonnet-20241022"
 
-            // API 요청
+            // API request
             val apiResponse = httpClient.post("https://api.anthropic.com/v1/messages") {
                 header("x-api-key", config.apiKey)
                 header("anthropic-version", "2023-06-01")
+                header("Accept-Charset", "utf-8")
                 contentType(ContentType.Application.Json)
                 setBody(
                     ClaudeRequest(
@@ -67,30 +70,34 @@ class ClaudeSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
                         messages = listOf(
                             ClaudeMessage(role = "user", content = prompt)
                         ),
-                        max_tokens = 2000
+                        max_tokens = 2000,
+                        temperature = 0.7
                     )
                 )
             }
 
-            // API 응답 디버깅
+            // Get response text for parsing
             val responseText = apiResponse.body<String>()
-            println("API 응답: $responseText")
 
-            // 응답에서 필요한 정보 추출
-            if (!responseText.contains("error")) {
-                try {
-                    val response: ClaudeResponse = apiResponse.body()
-                    return@withContext response.content ?: "응답을 생성할 수 없습니다."
-                } catch (e: Exception) {
-                    println("응답 파싱 오류: ${e.message}")
-                    return@withContext "응답 파싱 오류: ${e.message}"
+            // Extract content from response
+            try {
+                val response: ClaudeResponse = apiResponse.body()
+                
+                // Check if response contains error
+                if (responseText.contains("\"type\":\"error\"")) {
+                    return@withContext "API response error: $responseText"
                 }
-            } else {
-                return@withContext "API 응답 오류: $responseText"
+                
+                val contentText = response.content.firstOrNull { it.type == "text" }?.text
+                return@withContext contentText ?: "Unable to generate response."
+            } catch (e: Exception) {
+                println("Response parsing error: ${e.message}")
+                println("JSON input: ${responseText.take(200)}.....")
+                return@withContext "Response parsing error: ${e.message}"
             }
         } catch (e: Exception) {
-            println("API 오류 상세: ${e.stackTraceToString()}")
-            return@withContext "Claude API 호출 중 오류 발생: ${e.message}"
+            println("API error details: ${e.stackTraceToString()}")
+            return@withContext "Error calling Claude API: ${e.message}"
         }
     }
 
@@ -100,8 +107,8 @@ class ClaudeSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
         val model: String,
         val system: String,
         val messages: List<ClaudeMessage>,
-        val max_tokens: Int = 2000,
-        val temperature: Double = 0.7
+        val max_tokens: Int,
+        val temperature: Double
     )
 
     @Serializable
@@ -115,7 +122,7 @@ class ClaudeSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
         val id: String? = null,
         val type: String? = null,
         val role: String? = null,
-        val content: String? = null,
+        val content: List<ClaudeContent> = emptyList(),
         val model: String? = null,
         val stop_reason: String? = null,
         val stop_sequence: String? = null,
@@ -123,8 +130,16 @@ class ClaudeSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
     )
 
     @Serializable
+    data class ClaudeContent(
+        val type: String? = null,
+        val text: String? = null
+    )
+
+    @Serializable
     data class ClaudeUsage(
         val input_tokens: Int? = null,
-        val output_tokens: Int? = null
+        val output_tokens: Int? = null,
+        val cache_creation_input_tokens: Int? = null,
+        val cache_read_input_tokens: Int? = null
     )
 }

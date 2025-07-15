@@ -50,6 +50,7 @@ class PerplexitySummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
 
             val apiResponse = httpClient.post("https://api.perplexity.ai/chat/completions") {
                 header("Authorization", "Bearer ${config.apiKey}")
+                header("Accept-Charset", "utf-8")
                 contentType(ContentType.Application.Json)
                 setBody(
                     PerplexityRequest(
@@ -68,7 +69,6 @@ class PerplexitySummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
             }
 
             val responseText = apiResponse.body<String>()
-            println("API 응답: $responseText")
 
             if (!responseText.contains("error")) {
                 try {

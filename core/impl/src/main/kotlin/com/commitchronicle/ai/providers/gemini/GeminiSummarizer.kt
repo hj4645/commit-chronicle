@@ -27,6 +27,7 @@ class GeminiSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
         install(ContentNegotiation) {
             json(Json {
                 ignoreUnknownKeys = true
+                isLenient = true
             })
         }
         install(HttpTimeout) {
@@ -57,6 +58,7 @@ class GeminiSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
 
             val apiResponse =
                 httpClient.post("https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=${config.apiKey}") {
+                    header("Accept-Charset", "utf-8")
                     contentType(ContentType.Application.Json)
                     setBody(
                         GeminiRequest(
@@ -68,17 +70,25 @@ class GeminiSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
 
             val responseText = apiResponse.body<String>()
 
-            if (!responseText.contains("error")) {
-                try {
-                    val response: GeminiResponse = apiResponse.body()
-                    return@withContext response.candidates.firstOrNull()?.content?.parts?.firstOrNull()?.text
-                        ?: "Unable to generate response."
-                } catch (e: Exception) {
-                    println("Response parsing error: ${e.message}")
-                    return@withContext "Response parsing error: ${e.message}"
+            // Check HTTP status first
+            if (apiResponse.status.value >= 400) {
+                return@withContext "API error (${apiResponse.status.value}): $responseText"
+            }
+            
+            try {
+                val response: GeminiResponse = apiResponse.body()
+                
+                // Check if response has error structure (Gemini API error format)
+                if (responseText.contains("\"error\":{") || responseText.startsWith("{\"error\"")) {
+                    return@withContext "API response error: $responseText"
                 }
-            } else {
-                return@withContext "API response error: $responseText"
+                
+                val text = response.candidates.firstOrNull()?.content?.parts?.firstOrNull()?.text
+                return@withContext text ?: "Unable to generate response."
+            } catch (e: Exception) {
+                println("Response parsing error: ${e.message}")
+                println("JSON input: ${responseText.take(200)}.....")
+                return@withContext "Response parsing error: ${e.message}"
             }
         } catch (e: Exception) {
             println("API error details: ${e.stackTraceToString()}")
@@ -112,11 +122,23 @@ class GeminiSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
 
     @Serializable
     data class GeminiResponse(
-        val candidates: List<GeminiCandidate> = emptyList()
+        val candidates: List<GeminiCandidate> = emptyList(),
+        val usageMetadata: GeminiUsageMetadata? = null,
+        val modelVersion: String? = null,
+        val responseId: String? = null
     )
 
     @Serializable
     data class GeminiCandidate(
-        val content: GeminiContent? = null
+        val content: GeminiContent? = null,
+        val finishReason: String? = null,
+        val index: Int? = null
+    )
+    
+    @Serializable
+    data class GeminiUsageMetadata(
+        val promptTokenCount: Int? = null,
+        val candidatesTokenCount: Int? = null,
+        val totalTokenCount: Int? = null
     )
 }

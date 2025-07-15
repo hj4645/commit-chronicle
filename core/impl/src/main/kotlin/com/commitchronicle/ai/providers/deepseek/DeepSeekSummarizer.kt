@@ -60,6 +60,7 @@ class DeepSeekSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
             // API 요청
             val apiResponse = httpClient.post("https://api.deepseek.com/v1/chat/completions") {
                 header("Authorization", "Bearer ${config.apiKey}")
+                header("Accept-Charset", "utf-8")
                 contentType(ContentType.Application.Json)
                 setBody(
                     DeepSeekRequest(
@@ -79,7 +80,6 @@ class DeepSeekSummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
 
             // API 응답 디버깅
             val responseText = apiResponse.body<String>()
-            println("API 응답: $responseText")
 
             // 응답에서 필요한 정보 추출
             if (!responseText.contains("error")) {

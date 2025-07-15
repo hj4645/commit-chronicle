@@ -50,6 +50,7 @@ class OpenAISummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
 
             var apiResponse = httpClient.post("https://api.openai.com/v1/chat/completions") {
                 header("Authorization", "Bearer ${config.apiKey}")
+                header("Accept-Charset", "utf-8")
                 contentType(ContentType.Application.Json)
                 setBody(
                     OpenAIRequest(
@@ -68,7 +69,6 @@ class OpenAISummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
             }
 
             var responseText = apiResponse.body<String>()
-            println("API 응답: $responseText")
 
             if (responseText.contains("error") &&
                 (responseText.contains("model_not_found") ||
@@ -79,6 +79,7 @@ class OpenAISummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
 
                 apiResponse = httpClient.post("https://api.openai.com/v1/chat/completions") {
                     header("Authorization", "Bearer ${config.apiKey}")
+                    header("Accept-Charset", "utf-8")
                     contentType(ContentType.Application.Json)
                     setBody(
                         OpenAIRequest(
@@ -97,7 +98,6 @@ class OpenAISummarizer(config: AIProviderConfig) : BaseSummarizer(config) {
                 }
 
                 responseText = apiResponse.body<String>()
-                println("GPT-3.5 API 응답: $responseText")
             }
 
             if (!responseText.contains("error")) {
