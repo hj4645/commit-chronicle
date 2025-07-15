@@ -1,6 +1,20 @@
 # Commit Chronicle
 
-AI를 활용한 Git 커밋 분석 및 요약 라이브러리입니다. 커밋 히스토리를 분석하여 Pull Request 초안, 변경 로그, 커밋 요약을 자동으로 생성합니다.
+[![JitPack](https://jitpack.io/v/hj4645/commit-chronicle.svg)](https://jitpack.io/#hj4645/commit-chronicle)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=flat&logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+[![GitHub Issues](https://img.shields.io/github/issues/hj4645/commit-chronicle.svg)](https://github.com/hj4645/commit-chronicle/issues)
+[![GitHub Stars](https://img.shields.io/github/stars/hj4645/commit-chronicle.svg)](https://github.com/hj4645/commit-chronicle/stargazers)
+[![CI](https://github.com/hj4645/commit-chronicle/workflows/JitPack%20Release/badge.svg)](https://github.com/hj4645/commit-chronicle/actions)
+
+AI를 활용한 Git 커밋 분석 및 요약 라이브러리입니다. 커밋 히스토리를 분석하여 Pull Request 초안, 변경 로그, 커밋 요약을 자동 생성합니다.
+
+## 🌐 다국어 문서
+
+- **[한국어 (Korean)](README.md)** - 현재 문서
+- **[English](README_EN.md)** - English Documentation  
+- **[中文 (Chinese)](README_ZH.md)** - 中文文档
+- **[日本語 (Japanese)](README_JA.md)** - 日本語ドキュメント
 
 ## 🚀 주요 기능
 
@@ -8,7 +22,6 @@ AI를 활용한 Git 커밋 분석 및 요약 라이브러리입니다. 커밋 �
 - **PR 초안 자동 생성**: 커밋 히스토리 기반 PR 템플릿 생성
 - **다국어 지원**: 한국어, 영어, 중국어, 일본어
 - **GitHub 템플릿 감지**: 기존 PR 템플릿 자동 적용
-- **브랜치 검증**: main/master 브랜치 경고 및 의미있는 커밋 필터링
 - **CLI 도구**: 명령줄에서 바로 사용 가능
 
 ## 📦 설치 방법
@@ -46,84 +59,148 @@ dependencies {
 
 ## 🛠️ 사용 방법
 
-### CLI 사용법
+### 1. 라이브러리 설치 후 CLI 사용
 
-#### 1. 초기 설정
+라이브러리를 dependency로 추가한 후, alias를 설정하여 CLI로 사용할 수 있습니다:
 
 ```bash
-java -jar commitchronicle-0.1.0.jar
+# Gradle 캐시에서 JAR 파일 경로 확인
+find ~/.gradle/caches -name "commitchronicle-0.1.0.jar" -type f
+
+# alias 설정 (예시 - 실제 경로로 수정 필요)
+alias cch="java -jar ~/.gradle/caches/modules-2/files-2.1/com.github.hj4645/commit-chronicle/v0.1.0/*/commitchronicle-0.1.0.jar"
+
+# 또는 직접 다운로드한 JAR 파일 사용
+alias cch="java -jar /path/to/commitchronicle-0.1.0.jar"
 ```
 
-첫 실행 시 대화형 설정이 시작됩니다:
-- 언어 선택 (한국어, English, 中文, 日本語)
-- AI 모델 선택 (OpenAI, Claude, Gemini, Perplexity, DeepSeek)
-- API 키 입력
+### 2. 초기 설정
 
-#### 2. 커밋 요약 생성
+처음 실행 시 인터랙티브 설정이 시작됩니다:
 
 ```bash
-# 기본 설정으로 요약 (최근 7일, 최대 50개 커밋)
-java -jar commitchronicle-0.1.0.jar summarize
+cch settings
+```
+
+**설정 과정:**
+
+1. **언어 선택**
+   - 한국어 (Korean)
+   - English
+   - 中文 (Chinese)
+   - 日本語 (Japanese)
+
+2. **AI 모델 선택**
+   - OpenAI (gpt-4o, gpt-4o-mini, gpt-4-turbo)
+   - Claude (claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022)
+   - Gemini (gemini-2.0-flash-exp, gemini-1.5-flash, gemini-1.5-pro)
+   - Perplexity (llama-3.1-sonar-large-128k-online, llama-3.1-sonar-small-128k-online)
+   - DeepSeek (deepseek-chat, deepseek-coder)
+
+3. **API 키 입력**
+   - 선택한 AI 모델의 API 키 입력
+
+4. **분석 설정**
+   - 기본 분석 기간 (일 단위, 기본값: 7일)
+   - 최대 커밋 수 (기본값: 50개)
+
+**설정 예시:**
+```
+Update current settings
+
+Select setting to update:
+Selected: Language
+
+Select language (current: en):
+Selected: 한국어 (Korean)
+Language updated to: ko (AI responses will use this language)
+
+Select setting to update:
+Selected: AI Provider
+
+Select AI provider (current: openai):
+Selected: OpenAI (API Key ✓)
+
+Select model for openai (current: gpt-4o):
+Selected: GPT-4o (Latest)
+
+API key for openai (current: ***):
+Selected: Keep existing API key
+
+Select setting to update:
+Selected: Analysis Settings
+
+Enter default days for analysis (current: 7, press Enter to keep current): 14
+
+Enter default commit limit (current: 50, press Enter to keep current): 100
+Analysis settings updated - Days: 14, Limit: 100
+
+Select setting to update:
+Selected: Done
+Configuration saved successfully
+```
+
+### 3. CLI 명령어 사용
+
+#### 커밋 요약 생성
+
+```bash
+# 기본 설정 사용 (설정된 기간과 커밋 수)
+cch summarize
 
 # 옵션 지정
-java -jar commitchronicle-0.1.0.jar summarize -d 14 -l 100
-java -jar commitchronicle-0.1.0.jar summarize --path /path/to/repo
+cch summarize -d 14 -l 100           # 14일간, 최대 100개 커밋
+cch summarize --days 7 --limit 50    # 7일간, 최대 50개 커밋
+cch summarize --path /path/to/repo   # 특정 저장소 경로
 ```
 
-#### 3. PR 초안 생성
+#### PR 초안 생성
 
 ```bash
 # 현재 브랜치의 PR 초안 생성
-java -jar commitchronicle-0.1.0.jar pr
+cch pr
 
 # 옵션 지정
-java -jar commitchronicle-0.1.0.jar pr -d 7 -l 20
+cch pr -d 7 -l 20                    # 7일간, 최대 20개 커밋
+cch pr --path /path/to/repo          # 특정 저장소 경로
 ```
 
-#### 4. 설정 관리
+#### 설정 관리
 
 ```bash
-# 현재 설정 보기
-java -jar commitchronicle-0.1.0.jar settings --show
+# 설정 변경 (인터랙티브 메뉴)
+cch settings
 
-# 설정 변경
-java -jar commitchronicle-0.1.0.jar settings
-
-# 설정 초기화
-java -jar commitchronicle-0.1.0.jar settings --reset
+# 도움말 보기
+cch settings --help
+cch --help
 ```
 
-### 라이브러리 사용법
+### 4. 키보드 방향키 설정 방법
 
-```kotlin
-import com.commitchronicle.git.GitAnalyzerFactory
-import com.commitchronicle.ai.factory.AISummarizerFactory
-import com.commitchronicle.ai.providers.openai.config.OpenAIConfig
-import com.commitchronicle.ai.AIProviderType
-import com.commitchronicle.language.Locale
+설정 메뉴에서는 키보드 방향키를 사용하여 옵션을 선택할 수 있습니다:
 
-// Git 분석기 생성
-val gitAnalyzer = GitAnalyzerFactory.create("/path/to/repo")
+- **↑/↓ 화살표**: 옵션 선택
+- **Enter**: 선택 확인
+- **Esc**: 이전 메뉴로 돌아가기
 
-// AI 설정
-val aiConfig = OpenAIConfig(
-    apiKey = "your-api-key",
-    locale = Locale.KOREAN
-)
-val aiSummarizer = AISummarizerFactory.create(aiConfig, AIProviderType.OPENAI)
-
-// 커밋 분석
-val commits = gitAnalyzer.getCommits(7) // 최근 7일
-val summary = aiSummarizer.summarize(commits)
-val prDraft = aiSummarizer.generatePRDraft(commits)
-
-println("요약: $summary")
-println("PR 초안: $prDraft")
+**설정 메뉴 구조:**
+```
+Main Menu
+├── Language (언어 설정)
+├── AI Provider (AI 모델 설정)
+│   ├── Provider Selection
+│   ├── Model Selection  
+│   └── API Key Input
+├── Analysis Settings (분석 설정)
+│   ├── Default Days
+│   └── Commit Limit
+└── Done (완료)
 ```
 
-## 🔧 설정
+## 🔧 설정 파일
 
-설정은 `~/.commit-chronicle/config.json`에 저장됩니다:
+설정은 `~/.commit-chronicle/config.json`에 로컬 저장됩니다:
 
 ```json
 {
@@ -135,10 +212,44 @@ println("PR 초안: $prDraft")
 }
 ```
 
-## 🤖 지원 AI 모델
+**설정 지속성:**
+- 한 번 설정하면 계속 유지됩니다
+- 다른 프로젝트에서도 동일한 설정 사용
+- 필요시 `cch settings`로 언제든 변경 가능
 
-| 제공업체 | 모델 |
-|---------|------|
+## 🔧 GitHub 템플릿 자동 감지
+
+### 지원하는 템플릿 경로
+
+**PR 템플릿 (우선순위 순):**
+```
+.github/pull_request_template_[locale].md    # 다국어 지원
+.github/pull_request_template.md
+.github/PULL_REQUEST_TEMPLATE.md
+.github/PULL_REQUEST_TEMPLATE/pull_request_template.md
+docs/pull_request_template.md
+docs/PULL_REQUEST_TEMPLATE.md
+pull_request_template.md
+PULL_REQUEST_TEMPLATE.md
+```
+
+**다국어 템플릿 예시:**
+- `.github/pull_request_template_ko.md` (한국어)
+- `.github/pull_request_template_en.md` (영어)
+- `.github/pull_request_template_zh.md` (중국어)
+- `.github/pull_request_template_ja.md` (일본어)
+
+### 템플릿 적용 방식
+
+1. **자동 감지**: 위 경로에서 템플릿 파일을 자동으로 찾습니다
+2. **언어별 우선순위**: 설정된 언어에 맞는 템플릿을 우선 적용
+3. **폴백 처리**: 해당 언어 템플릿이 없으면 기본 템플릿 사용
+4. **동적 적용**: AI가 템플릿 구조에 맞춰 내용을 자동 생성
+
+## 🤖 지원하는 AI 모델
+
+| 프로바이더 | 모델 |
+|-------------|--------|
 | OpenAI | gpt-4o, gpt-4o-mini, gpt-4-turbo |
 | Claude | claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022 |
 | Gemini | gemini-2.0-flash-exp, gemini-1.5-flash, gemini-1.5-pro |
@@ -150,7 +261,7 @@ println("PR 초안: $prDraft")
 ```
 commit-chronicle/
 ├── core/
-│   ├── api/           # 인터페이스 및 모델
+│   ├── api/           # 인터페이스와 모델
 │   └── impl/          # 구현체
 ├── cli/               # CLI 도구
 └── build.gradle.kts   # 빌드 설정
@@ -173,7 +284,7 @@ commit-chronicle/
 
 MIT License
 
-## 🤝 기여하기
+## 🤝 기여
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
