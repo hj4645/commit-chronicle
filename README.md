@@ -92,8 +92,8 @@ cch settings
 
 2. **AI 모델 선택**
    - OpenAI (gpt-4o, gpt-4o-mini, gpt-4-turbo)
-   - Claude (claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022)
-   - Gemini (gemini-2.0-flash-exp, gemini-1.5-flash, gemini-1.5-pro)
+   - Claude (claude-3-5-haiku-20241022, claude-3-haiku-20240307, claude-3-5-sonnet-20241022, claude-3-sonnet-20240229, claude-3-7-sonnet-20250219)
+   - Gemini (gemini-2.5-pro, gemini-2.0-flash, gemini-2.5-flash)
    - Perplexity (llama-3.1-sonar-large-128k-online, llama-3.1-sonar-small-128k-online)
    - DeepSeek (deepseek-chat, deepseek-coder)
 
@@ -251,8 +251,8 @@ PULL_REQUEST_TEMPLATE.md
 | 프로바이더 | 모델 |
 |-------------|--------|
 | OpenAI | gpt-4o, gpt-4o-mini, gpt-4-turbo |
-| Claude | claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022 |
-| Gemini | gemini-2.0-flash-exp, gemini-1.5-flash, gemini-1.5-pro |
+| Claude | claude-3-5-haiku-20241022, claude-3-haiku-20240307, claude-3-5-sonnet-20241022, claude-3-sonnet-20240229, claude-3-7-sonnet-20250219 |
+| Gemini | gemini-2.5-pro, gemini-2.0-flash, gemini-2.5-flash |
 | Perplexity | llama-3.1-sonar-large-128k-online, llama-3.1-sonar-small-128k-online |
 | DeepSeek | deepseek-chat, deepseek-coder |
 

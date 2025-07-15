@@ -12,18 +12,15 @@ enum class AIProvider(
         AIModel("gpt-3.5-turbo", "GPT-3.5 Turbo")
     )),
     CLAUDE("Claude", listOf(
-        AIModel("claude-3-5-sonnet-20241022", "Claude 3.5 Sonnet (Latest)"),
         AIModel("claude-3-5-haiku-20241022", "Claude 3.5 Haiku (Latest)"),
-        AIModel("claude-3-opus-20240229", "Claude 3 Opus"),
-        AIModel("claude-3-sonnet-20240229", "Claude 3 Sonnet"),
-        AIModel("claude-3-haiku-20240307", "Claude 3 Haiku")
+        AIModel("claude-3-haiku-20240307", "Claude 3 Haiku (Fast)"),
+        AIModel("claude-3-5-sonnet-20241022", "Claude 3.5 Sonnet (Latest)"),
+        AIModel("claude-3-7-sonnet-20250219", "Claude 3.7 Sonnet (Latest)")
     )),
     GEMINI("Gemini", listOf(
-        AIModel("gemini-2.0-flash", "Gemini 2.0 Flash (Latest)"),
-        AIModel("gemini-2.5-flash", "Gemini 2.5 Flash (Latest)"),
         AIModel("gemini-2.5-pro", "Gemini 2.5 Pro (Latest)"),
-        AIModel("gemini-1.5-flash", "Gemini 1.5 Flash (Deprecated)"),
-        AIModel("gemini-1.5-pro", "Gemini 1.5 Pro (Deprecated)")
+        AIModel("gemini-2.0-flash", "Gemini 2.0 Flash (Latest)"),
+        AIModel("gemini-2.5-flash", "Gemini 2.5 Flash (Latest)")
     )),
     PERPLEXITY("Perplexity", listOf(
         AIModel("llama-3.1-sonar-small-128k-online", "Llama 3.1 Sonar Small"),
