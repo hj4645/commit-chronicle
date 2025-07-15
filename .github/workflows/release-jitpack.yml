@@ -90,7 +90,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: [test, jitpack-compatibility]
-    if: secrets.DEPLOY_TOKEN != ''
+    if: ${{ secrets.DEPLOY_TOKEN != '' }}
     
     steps:
       - name: Checkout repository
