@@ -306,7 +306,7 @@ class Settings : CliktCommand(
                     val daysInput = readLine()
                     val newDays = if (daysInput.isNullOrEmpty()) {
                         updatedConfig.defaultDays
-                    } else {
+        } else {
                         daysInput.toIntOrNull()?.takeIf { it > 0 } ?: run {
                             println("Invalid input. Keeping current value: ${updatedConfig.defaultDays}")
                             updatedConfig.defaultDays
@@ -318,7 +318,7 @@ class Settings : CliktCommand(
                     val limitInput = readLine()
                     val newLimit = if (limitInput.isNullOrEmpty()) {
                         updatedConfig.defaultLimit
-                    } else {
+        } else {
                         limitInput.toIntOrNull()?.takeIf { it > 0 } ?: run {
                             println("Invalid input. Keeping current value: ${updatedConfig.defaultLimit}")
                             updatedConfig.defaultLimit

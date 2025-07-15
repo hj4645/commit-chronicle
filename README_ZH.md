@@ -34,7 +34,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.hj4645:commit-chronicle:v0.1.0")
+    implementation("com.github.hj4645:commit-chronicle:1.0.0")
 }
 ```
 
@@ -52,7 +52,7 @@ dependencies {
     <dependency>
         <groupId>com.github.hj4645</groupId>
         <artifactId>commit-chronicle</artifactId>
-        <version>v0.1.0</version>
+        <version>1.0.0</version>
     </dependency>
 </dependencies>
 ```

@@ -18,7 +18,7 @@ dependencies {
 tasks {
     shadowJar {
         archiveBaseName.set("commitchronicle")
-        archiveVersion.set("0.1.0")
+        archiveVersion.set(project.version.toString())
         archiveClassifier.set("")
         manifest {
             attributes["Main-Class"] = "com.commitchronicle.cli.MainKt"
@@ -54,7 +54,7 @@ publishing {
 
             groupId = "com.github.hj4645"
             artifactId = "commit-chronicle"
-            version = "0.1.0"
+            version = project.version.toString()
 
             pom {
                 name.set("Commit Chronicle")
@@ -91,7 +91,7 @@ publishing {
                     connection.set("scm:git:git://github.com/hj4645/commit-chronicle.git")
                     developerConnection.set("scm:git:ssh://git@github.com:hj4645/commit-chronicle.git")
                     url.set("https://github.com/hj4645/commit-chronicle")
-                    tag.set("v0.1.0")
+                    tag.set("v${project.version}")
                 }
 
                 issueManagement {

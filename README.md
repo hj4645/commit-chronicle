@@ -34,7 +34,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.hj4645:commit-chronicle:v0.1.0")
+    implementation("com.github.hj4645:commit-chronicle:1.0.0")
 }
 ```
 
@@ -52,7 +52,7 @@ dependencies {
     <dependency>
         <groupId>com.github.hj4645</groupId>
         <artifactId>commit-chronicle</artifactId>
-        <version>v0.1.0</version>
+        <version>1.0.0</version>
     </dependency>
 </dependencies>
 ```
@@ -65,13 +65,13 @@ dependencies {
 
 ```bash
 # Gradle 캐시에서 JAR 파일 경로 확인
-find ~/.gradle/caches -name "commitchronicle-0.1.0.jar" -type f
+find ~/.gradle/caches -name "commitchronicle-1.0.0.jar" -type f
 
 # alias 설정 (예시 - 실제 경로로 수정 필요)
-alias cch="java -jar ~/.gradle/caches/modules-2/files-2.1/com.github.hj4645/commit-chronicle/v0.1.0/*/commitchronicle-0.1.0.jar"
+alias cch="java -jar ~/.gradle/caches/modules-2/files-2.1/com.github.hj4645/commit-chronicle/1.0.0/*/commitchronicle-1.0.0.jar"
 
 # 또는 직접 다운로드한 JAR 파일 사용
-alias cch="java -jar /path/to/commitchronicle-0.1.0.jar"
+alias cch="java -jar /path/to/commitchronicle-1.0.0.jar"
 ```
 
 ### 2. 초기 설정

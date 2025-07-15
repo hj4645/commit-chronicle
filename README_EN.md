@@ -34,7 +34,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.hj4645:commit-chronicle:v0.1.0")
+    implementation("com.github.hj4645:commit-chronicle:1.0.0")
 }
 ```
 
@@ -52,7 +52,7 @@ dependencies {
     <dependency>
         <groupId>com.github.hj4645</groupId>
         <artifactId>commit-chronicle</artifactId>
-        <version>v0.1.0</version>
+        <version>1.0.0</version>
     </dependency>
 </dependencies>
 ```
@@ -68,7 +68,7 @@ After adding the library as a dependency, you can set up an alias to use it as C
 find ~/.gradle/caches -name "commitchronicle-0.1.0.jar" -type f
 
 # Set up alias (example - modify with actual path)
-alias cch="java -jar ~/.gradle/caches/modules-2/files-2.1/com.github.hj4645/commit-chronicle/v0.1.0/*/commitchronicle-0.1.0.jar"
+alias cch="java -jar ~/.gradle/caches/modules-2/files-2.1/com.github.hj4645/commit-chronicle/1.0.0/*/commitchronicle-1.0.0.jar"
 
 # Or use directly downloaded JAR file
 alias cch="java -jar /path/to/commitchronicle-0.1.0.jar"
