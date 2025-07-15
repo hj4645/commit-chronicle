@@ -31,4 +31,13 @@ interface AISummarizer {
      * @return 생성된 변경 로그
      */
     suspend fun generateChangelog(commits: List<Commit>, groupByType: Boolean = false): String
+    
+    /**
+     * 주어진 템플릿 형태로 PR 초안을 생성합니다.
+     *
+     * @param commits 요약할 커밋 목록
+     * @param template 사용할 템플릿 내용
+     * @return 템플릿 형태로 생성된 PR 초안
+     */
+    suspend fun generatePRDraftWithTemplate(commits: List<Commit>, template: String): String
 } 

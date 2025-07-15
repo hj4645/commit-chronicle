@@ -473,19 +473,23 @@ class PR : CliktCommand(
             val templateDetector = TemplateEngineFactory.createGitHubTemplateDetector()
             val githubTemplatePath = templateDetector.findPRTemplate(path.absolutePathString(), Locale.fromCode(config.locale ?: "en"))
 
-            val prDraft = if (githubTemplatePath != null) {
-                echo("GitHub PR template detected: $githubTemplatePath")
-                val templateParser = TemplateEngineFactory.createGitHubTemplateParser(Locale.fromCode(config.locale ?: "en"))
-                val templateContent = templateDetector.readTemplateContent(githubTemplatePath)
-                
-                if (templateContent != null) {
-                    templateParser.parseAndRender(templateContent, commitsForPR, null)
-                } else {
-                    echo("Unable to read template file. Using AI generation instead.")
-                    aiSummarizer.generatePRDraft(commitsForPR, null)
+            val prDraft = when {
+                githubTemplatePath != null -> {
+                    echo("GitHub PR template detected: $githubTemplatePath")
+                    val templateContent = templateDetector.readTemplateContent(githubTemplatePath)
+                    
+                    when (templateContent) {
+                        null -> {
+                            echo("Unable to read template file. Using AI generation instead.")
+                            aiSummarizer.generatePRDraft(commitsForPR, null)
+                        }
+                        else -> {
+                            // AI에게 템플릿 형태로 상세한 내용을 작성하도록 요청
+                            aiSummarizer.generatePRDraftWithTemplate(commitsForPR, templateContent)
+                        }
+                    }
                 }
-            } else {
-                aiSummarizer.generatePRDraft(commitsForPR, null)
+                else -> aiSummarizer.generatePRDraft(commitsForPR, null)
             }
             
             echo("\n=== PR Draft ===\n")

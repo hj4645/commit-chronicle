@@ -139,7 +139,7 @@ class GitHubTemplateDetectorImpl : GitHubTemplateDetector {
     override fun readTemplateContent(templatePath: String): String? {
         return try {
             if (isValidTemplate(templatePath)) {
-                File(templatePath).readText()
+                File(templatePath).readText(Charsets.UTF_8)
             } else {
                 null
             }

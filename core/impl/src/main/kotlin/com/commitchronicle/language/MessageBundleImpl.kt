@@ -9,13 +9,17 @@ class MessageBundleImpl : MessageBundle {
         init {
             loadBundle(Locale.ENGLISH)
             loadBundle(Locale.KOREAN)
+            loadBundle(Locale.CHINESE)
+            loadBundle(Locale.JAPANESE)
         }
 
         private fun loadBundle(locale: Locale) {
             val properties = Properties()
             val resourceName = "/messages_${locale.code}.properties"
-            MessageBundleImpl::class.java.getResourceAsStream(resourceName)?.use {
-                properties.load(it)
+            MessageBundleImpl::class.java.getResourceAsStream(resourceName)?.use { inputStream ->
+                inputStream.reader(Charsets.UTF_8).use { reader ->
+                    properties.load(reader)
+                }
             }
             bundles[locale.code] = properties
         }
