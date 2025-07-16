@@ -61,17 +61,50 @@ dependencies {
 
 ### 1. 作为库使用CLI
 
-添加依赖后，可以设置别名来使用CLI：
+添加依赖后，可以设置别名来使用CLI。
 
+#### 🚀 简便的别名设置方法
+
+**macOS/Linux:**
 ```bash
-# 在Gradle缓存中查找JAR文件路径
-find ~/.gradle/caches -name "commitchronicle-0.1.0.jar" -type f
+# 一键设置别名
+echo "alias cch=\"java -jar \$(find ~/.gradle/caches -name \"*commit-chronicle*\" -type f | grep \"\.jar$\" | head -1)\"" >> ~/.zshrc && source ~/.zshrc
 
-# 设置别名（示例 - 需要修改为实际路径）
-alias cch="java -jar ~/.gradle/caches/modules-2/files-2.1/com.github.hj4645/commit-chronicle/v0.1.0/*/commitchronicle-0.1.0.jar"
+# 或分步设置
+JAR_PATH=$(find ~/.gradle/caches -name "*commit-chronicle*" -type f | grep "\.jar$" | head -1)
+echo "alias cch=\"java -jar $JAR_PATH\"" >> ~/.zshrc
+source ~/.zshrc
+```
 
-# 或使用直接下载的JAR文件
-alias cch="java -jar /path/to/commitchronicle-0.1.0.jar"
+**Windows (PowerShell):**
+```powershell
+# 查找JAR文件路径
+$jarPath = Get-ChildItem -Path "$env:USERPROFILE\.gradle\caches" -Recurse -Name "*commit-chronicle*.jar" | Select-Object -First 1
+$fullPath = Join-Path "$env:USERPROFILE\.gradle\caches" $jarPath
+
+# 设置别名
+echo "function cch { java -jar `"$fullPath`" @args }" >> $PROFILE
+. $PROFILE
+```
+
+#### 手动设置方法
+
+**查找JAR文件路径：**
+```bash
+# macOS/Linux
+find ~/.gradle/caches -name "*commit-chronicle*" -type f | grep "\.jar$"
+
+# Windows (PowerShell)
+Get-ChildItem -Path "$env:USERPROFILE\.gradle\caches" -Recurse -Name "*commit-chronicle*.jar"
+```
+
+**设置别名：**
+```bash
+# macOS/Linux
+alias cch="java -jar /实际/jar/文件/路径/commit-chronicle-1.0.0.jar"
+
+# Windows (PowerShell)
+function cch { java -jar "C:\实际\jar\文件\路径\commit-chronicle-1.0.0.jar" @args }
 ```
 
 ### 2. 初始设置

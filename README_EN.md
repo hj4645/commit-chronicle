@@ -61,17 +61,50 @@ dependencies {
 
 ### 1. Using as Library for CLI
 
-After adding the library as a dependency, you can set up an alias to use it as CLI:
+After adding the library as a dependency, you can set up an alias to use it as CLI.
 
+#### 🚀 Easy Alias Setup Method
+
+**macOS/Linux:**
 ```bash
-# Find JAR file path in Gradle cache
-find ~/.gradle/caches -name "commitchronicle-0.1.0.jar" -type f
+# One-liner alias setup
+echo "alias cch=\"java -jar \$(find ~/.gradle/caches -name \"*commit-chronicle*\" -type f | grep \"\.jar$\" | head -1)\"" >> ~/.zshrc && source ~/.zshrc
 
-# Set up alias (example - modify with actual path)
-alias cch="java -jar ~/.gradle/caches/modules-2/files-2.1/com.github.hj4645/commit-chronicle/1.0.0/*/commitchronicle-1.0.0.jar"
+# Or step-by-step setup
+JAR_PATH=$(find ~/.gradle/caches -name "*commit-chronicle*" -type f | grep "\.jar$" | head -1)
+echo "alias cch=\"java -jar $JAR_PATH\"" >> ~/.zshrc
+source ~/.zshrc
+```
 
-# Or use directly downloaded JAR file
-alias cch="java -jar /path/to/commitchronicle-0.1.0.jar"
+**Windows (PowerShell):**
+```powershell
+# Find JAR file path
+$jarPath = Get-ChildItem -Path "$env:USERPROFILE\.gradle\caches" -Recurse -Name "*commit-chronicle*.jar" | Select-Object -First 1
+$fullPath = Join-Path "$env:USERPROFILE\.gradle\caches" $jarPath
+
+# Set up alias
+echo "function cch { java -jar `"$fullPath`" @args }" >> $PROFILE
+. $PROFILE
+```
+
+#### Manual Setup Method
+
+**Find JAR file path:**
+```bash
+# macOS/Linux
+find ~/.gradle/caches -name "*commit-chronicle*" -type f | grep "\.jar$"
+
+# Windows (PowerShell)
+Get-ChildItem -Path "$env:USERPROFILE\.gradle\caches" -Recurse -Name "*commit-chronicle*.jar"
+```
+
+**Set up alias:**
+```bash
+# macOS/Linux
+alias cch="java -jar /actual/jar/file/path/commit-chronicle-1.0.0.jar"
+
+# Windows (PowerShell)
+function cch { java -jar "C:\actual\jar\file\path\commit-chronicle-1.0.0.jar" @args }
 ```
 
 ### 2. Initial Setup

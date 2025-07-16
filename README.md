@@ -61,17 +61,50 @@ dependencies {
 
 ### 1. 라이브러리 설치 후 CLI 사용
 
-라이브러리를 dependency로 추가한 후, alias를 설정하여 CLI로 사용할 수 있습니다:
+라이브러리를 dependency로 추가한 후, alias를 설정하여 CLI로 사용할 수 있습니다.
 
+#### 🚀 간편한 alias 설정 방법
+
+**macOS/Linux:**
 ```bash
-# Gradle 캐시에서 JAR 파일 경로 확인
-find ~/.gradle/caches -name "commitchronicle-1.0.0.jar" -type f
+# 한 번에 alias 설정하기
+echo "alias cch=\"java -jar \$(find ~/.gradle/caches -name \"*commit-chronicle*\" -type f | grep \"\.jar$\" | head -1)\"" >> ~/.zshrc && source ~/.zshrc
 
-# alias 설정 (예시 - 실제 경로로 수정 필요)
-alias cch="java -jar ~/.gradle/caches/modules-2/files-2.1/com.github.hj4645/commit-chronicle/1.0.0/*/commitchronicle-1.0.0.jar"
+# 또는 단계별로 설정
+JAR_PATH=$(find ~/.gradle/caches -name "*commit-chronicle*" -type f | grep "\.jar$" | head -1)
+echo "alias cch=\"java -jar $JAR_PATH\"" >> ~/.zshrc
+source ~/.zshrc
+```
 
-# 또는 직접 다운로드한 JAR 파일 사용
-alias cch="java -jar /path/to/commitchronicle-1.0.0.jar"
+**Windows (PowerShell):**
+```powershell
+# JAR 파일 경로 찾기
+$jarPath = Get-ChildItem -Path "$env:USERPROFILE\.gradle\caches" -Recurse -Name "*commit-chronicle*.jar" | Select-Object -First 1
+$fullPath = Join-Path "$env:USERPROFILE\.gradle\caches" $jarPath
+
+# alias 설정
+echo "function cch { java -jar `"$fullPath`" @args }" >> $PROFILE
+. $PROFILE
+```
+
+#### 수동 설정 방법
+
+**JAR 파일 경로 확인:**
+```bash
+# macOS/Linux
+find ~/.gradle/caches -name "*commit-chronicle*" -type f | grep "\.jar$"
+
+# Windows (PowerShell)
+Get-ChildItem -Path "$env:USERPROFILE\.gradle\caches" -Recurse -Name "*commit-chronicle*.jar"
+```
+
+**alias 설정:**
+```bash
+# macOS/Linux
+alias cch="java -jar /실제/jar/파일/경로/commit-chronicle-1.0.0.jar"
+
+# Windows (PowerShell)
+function cch { java -jar "C:\실제\jar\파일\경로\commit-chronicle-1.0.0.jar" @args }
 ```
 
 ### 2. 초기 설정

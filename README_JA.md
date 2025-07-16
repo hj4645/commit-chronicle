@@ -61,17 +61,50 @@ dependencies {
 
 ### 1. ライブラリとしてCLI使用
 
-依存関係を追加後、エイリアスを設定してCLIとして使用できます：
+依存関係を追加後、エイリアスを設定してCLIとして使用できます。
 
+#### 🚀 簡単なエイリアス設定方法
+
+**macOS/Linux:**
 ```bash
-# Gradleキャッシュ内のJARファイルパスを確認
-find ~/.gradle/caches -name "commitchronicle-0.1.0.jar" -type f
+# ワンライナーでエイリアス設定
+echo "alias cch=\"java -jar \$(find ~/.gradle/caches -name \"*commit-chronicle*\" -type f | grep \"\.jar$\" | head -1)\"" >> ~/.zshrc && source ~/.zshrc
 
-# エイリアス設定（例 - 実際のパスに修正が必要）
-alias cch="java -jar ~/.gradle/caches/modules-2/files-2.1/com.github.hj4645/commit-chronicle/v0.1.0/*/commitchronicle-0.1.0.jar"
+# またはステップ別設定
+JAR_PATH=$(find ~/.gradle/caches -name "*commit-chronicle*" -type f | grep "\.jar$" | head -1)
+echo "alias cch=\"java -jar $JAR_PATH\"" >> ~/.zshrc
+source ~/.zshrc
+```
 
-# または直接ダウンロードしたJARファイルを使用
-alias cch="java -jar /path/to/commitchronicle-0.1.0.jar"
+**Windows (PowerShell):**
+```powershell
+# JARファイルパスを検索
+$jarPath = Get-ChildItem -Path "$env:USERPROFILE\.gradle\caches" -Recurse -Name "*commit-chronicle*.jar" | Select-Object -First 1
+$fullPath = Join-Path "$env:USERPROFILE\.gradle\caches" $jarPath
+
+# エイリアス設定
+echo "function cch { java -jar `"$fullPath`" @args }" >> $PROFILE
+. $PROFILE
+```
+
+#### 手動設定方法
+
+**JARファイルパス確認：**
+```bash
+# macOS/Linux
+find ~/.gradle/caches -name "*commit-chronicle*" -type f | grep "\.jar$"
+
+# Windows (PowerShell)
+Get-ChildItem -Path "$env:USERPROFILE\.gradle\caches" -Recurse -Name "*commit-chronicle*.jar"
+```
+
+**エイリアス設定：**
+```bash
+# macOS/Linux
+alias cch="java -jar /実際の/jar/ファイル/パス/commit-chronicle-1.0.0.jar"
+
+# Windows (PowerShell)
+function cch { java -jar "C:\実際の\jar\ファイル\パス\commit-chronicle-1.0.0.jar" @args }
 ```
 
 ### 2. 初期設定
