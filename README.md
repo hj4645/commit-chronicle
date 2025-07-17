@@ -77,16 +77,15 @@ dependencies {
 
 라이브러리를 dependency로 추가한 후, alias를 설정하여 CLI로 사용할 수 있습니다.
 
-#### 🚀 간편한 alias 설정 방법
+#### 🚀 간편한 alias 설정 방법 (자동 최신 버전 탐지)
 
 **macOS/Linux:**
 ```bash
-# 한 번에 alias 설정하기
-echo "alias cch='java -jar \$(find ~/.gradle/caches -name \"*commit-chronicle*\" -type f | grep \"\\.jar\$\" | head -1)'" >> ~/.zshrc && source ~/.zshrc
+# 자동 최신 버전 탐지 alias (권장) - 새 버전이 다운로드되면 자동으로 최신 버전 사용
+echo "alias cch='java -jar \$(find ~/.gradle/caches -path \"*commit-chronicle*\" -name \"*.jar\" -type f -print0 | xargs -0 ls -t | head -1)'" >> ~/.zshrc && source ~/.zshrc
 
 # 또는 단계별로 설정
-JAR_PATH=$(find ~/.gradle/caches -name "*commit-chronicle*" -type f | grep "\.jar$" | head -1)
-echo "alias cch='java -jar $JAR_PATH'" >> ~/.zshrc
+echo 'alias cch="java -jar \$(find ~/.gradle/caches -path \"*commit-chronicle*\" -name \"*.jar\" -type f -print0 | xargs -0 ls -t | head -1)"' >> ~/.zshrc
 source ~/.zshrc
 ```
 

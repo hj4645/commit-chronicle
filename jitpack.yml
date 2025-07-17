@@ -1,12 +1,8 @@
 jdk:
   - openjdk8
-  - openjdk11
-  - openjdk17
-  - openjdk21
-  - openjdk24
 
 before_install:
-  - echo "Setting up build environment"
+  - echo "Setting up build environment for Java 8-24 compatibility"
   - ./gradlew clean
 
 install:

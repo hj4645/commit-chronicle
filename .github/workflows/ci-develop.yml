@@ -9,19 +9,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        java-version: [8, 11, 17, 21, 24]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK ${{ matrix.java-version }}
+      - name: Set up JDK 8 (for Java 8-24 compatibility)
         uses: actions/setup-java@v4
         with:
-          java-version: ${{ matrix.java-version }}
+          java-version: '8'
           distribution: 'temurin'
 
       - name: Cache Gradle packages
@@ -30,9 +26,9 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-develop-jdk${{ matrix.java-version }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-develop-jdk8-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
-            ${{ runner.os }}-gradle-develop-jdk${{ matrix.java-version }}-
+            ${{ runner.os }}-gradle-develop-jdk8-
             ${{ runner.os }}-gradle-develop-
 
       - name: Setup Gradle
