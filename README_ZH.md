@@ -34,7 +34,13 @@ repositories {
 }
 
 dependencies {
+    // 使用特定版本
     implementation("com.github.hj4645:commit-chronicle:1.0.0")
+    
+    // 或自动使用最新版本
+    implementation("com.github.hj4645:commit-chronicle")  // 最新发布版本
+    // 或
+    implementation("com.github.hj4645:commit-chronicle:latest")  // 最新发布版本
 }
 ```
 
@@ -49,10 +55,18 @@ dependencies {
 </repositories>
 
 <dependencies>
+    <!-- 使用特定版本 -->
     <dependency>
         <groupId>com.github.hj4645</groupId>
         <artifactId>commit-chronicle</artifactId>
         <version>1.0.0</version>
+    </dependency>
+    
+    <!-- 或自动使用最新版本 -->
+    <dependency>
+        <groupId>com.github.hj4645</groupId>
+        <artifactId>commit-chronicle</artifactId>
+        <version>latest</version>  <!-- 最新发布版本 -->
     </dependency>
 </dependencies>
 ```
@@ -68,11 +82,11 @@ dependencies {
 **macOS/Linux:**
 ```bash
 # 一键设置别名
-echo "alias cch=\"java -jar \$(find ~/.gradle/caches -name \"*commit-chronicle*\" -type f | grep \"\.jar$\" | head -1)\"" >> ~/.zshrc && source ~/.zshrc
+echo "alias cch='java -jar \$(find ~/.gradle/caches -name \"*commit-chronicle*\" -type f | grep \"\\.jar\$\" | head -1)'" >> ~/.zshrc && source ~/.zshrc
 
 # 或分步设置
 JAR_PATH=$(find ~/.gradle/caches -name "*commit-chronicle*" -type f | grep "\.jar$" | head -1)
-echo "alias cch=\"java -jar $JAR_PATH\"" >> ~/.zshrc
+echo "alias cch='java -jar $JAR_PATH'" >> ~/.zshrc
 source ~/.zshrc
 ```
 

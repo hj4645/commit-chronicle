@@ -97,21 +97,17 @@ class InteractiveSetup {
         }
         
         // API Key input
-        print("\nEnter API key for $provider (press Enter to skip, type 'back' to go back): ")
-        val apiKey = readLine() ?: ""
-        
-        when {
-            apiKey.lowercase() == "back" -> {
-                println("Going back to model selection...")
-                return run() // Restart setup
-            }
-            apiKey.isEmpty() -> {
-                println("Warning: No API key provided. You can set it later using 'settings' command.")
+        val apiKeys = mutableMapOf<String, String>()
+        AIProvider.values().forEach { provider ->
+            print("\nEnter API key for ${provider.key} (press Enter to skip): ")
+            val apiKey = readLine() ?: ""
+            if (apiKey.isNotEmpty()) {
+                apiKeys[provider.key] = apiKey
             }
         }
         
         val config = UserConfig(
-            apiKey = apiKey.takeIf { it.isNotEmpty() },
+            apiKeys = apiKeys.toMap(),
             providerType = provider,
             modelName = selectedModel,
             locale = locale
@@ -155,7 +151,7 @@ class Settings : CliktCommand(
             val config = UserConfig.load()
             echo("""
                 Current configuration:
-                - API Key: ${config.apiKey?.let { "***" } ?: "not set"}
+                - API Key: ${config.getApiKey(config.providerType)?.let { "***" } ?: "not set"}
                 - AI Provider: ${config.providerType ?: "not set"}
                 - Model: ${config.modelName ?: "default"}
                 - Language: ${config.locale ?: "not set"}
@@ -214,7 +210,7 @@ class Settings : CliktCommand(
 
                 "provider" -> {
                     val providerOptions = AIProvider.values().map { provider ->
-                        val hasApiKey = currentConfig.providerType == provider.key && !currentConfig.apiKey.isNullOrEmpty()
+                        val hasApiKey = currentConfig.getApiKey(provider.key) != null
                         provider.key to "${provider.displayName}${if (hasApiKey) " (API Key ✓)" else ""}"
                     }
 
@@ -259,7 +255,8 @@ class Settings : CliktCommand(
                     }
 
                     // Handle API key
-                    val hasExistingKey = newProvider == currentConfig.providerType && !currentConfig.apiKey.isNullOrEmpty()
+                    val existingApiKey = currentConfig.getApiKey(newProvider)
+                    val hasExistingKey = existingApiKey != null
                     val newApiKey = if (hasExistingKey) {
                         val keyOptions = listOf(
                             "keep" to "Keep existing API key",
@@ -284,7 +281,7 @@ class Settings : CliktCommand(
                                 }
                                 input
                             }
-                            else -> currentConfig.apiKey
+                            else -> existingApiKey
                         }
                     } else {
                         print("\nEnter API key for $newProvider (press Enter to skip): ")
@@ -296,7 +293,13 @@ class Settings : CliktCommand(
                         input
                     }
 
-                    updatedConfig = updatedConfig.copy(providerType = newProvider, modelName = newModel, apiKey = newApiKey)
+                    // Update config with new API key
+                    updatedConfig = if (newApiKey != null) {
+                        updatedConfig.withApiKey(newProvider, newApiKey)
+                            .copy(providerType = newProvider, modelName = newModel)
+                    } else {
+                        updatedConfig.copy(providerType = newProvider, modelName = newModel)
+                    }
                     println("Provider updated to: $newProvider")
                     println("Model updated to: $newModel")
                 }
@@ -351,7 +354,8 @@ class Summarize : CliktCommand(
     override fun run() = runBlocking {
         val config = UserConfig.load()
         
-        if (config.apiKey.isNullOrEmpty()) {
+        val apiKey = config.getApiKey(config.providerType)
+        if (apiKey.isNullOrEmpty()) {
             echo("${MessageBundleProvider.getMessage("error.api-key-required")}")
             return@runBlocking
         }
@@ -383,12 +387,14 @@ class Summarize : CliktCommand(
     
     private fun createAIConfig(config: UserConfig): Pair<AIProviderConfig, AIProviderType> {
         val locale = Locale.fromCode(config.locale ?: "en")
+        val apiKey = config.getApiKey(config.providerType) 
+            ?: throw IllegalStateException("No API key found for provider: ${config.providerType}")
         val aiConfig = when (config.providerType?.lowercase()) {
-            "claude" -> ClaudeConfig(apiKey = config.apiKey!!, modelName = config.modelName, locale = locale)
-            "perplexity" -> PerplexityConfig(apiKey = config.apiKey!!, modelName = config.modelName, locale = locale)
-            "deepseek" -> DeepSeekConfig(apiKey = config.apiKey!!, modelName = config.modelName, locale = locale)
-            "gemini" -> GeminiConfig(apiKey = config.apiKey!!, modelName = config.modelName, locale = locale)
-            else -> OpenAIConfig(apiKey = config.apiKey!!, modelName = config.modelName, locale = locale)
+            "claude" -> ClaudeConfig(apiKey = apiKey, modelName = config.modelName, locale = locale)
+            "perplexity" -> PerplexityConfig(apiKey = apiKey, modelName = config.modelName, locale = locale)
+            "deepseek" -> DeepSeekConfig(apiKey = apiKey, modelName = config.modelName, locale = locale)
+            "gemini" -> GeminiConfig(apiKey = apiKey, modelName = config.modelName, locale = locale)
+            else -> OpenAIConfig(apiKey = apiKey, modelName = config.modelName, locale = locale)
         }
         
         val provider = when (config.providerType?.lowercase()) {
@@ -415,8 +421,9 @@ class PR : CliktCommand(
     override fun run() = runBlocking {
         val config = UserConfig.load()
         
-        if (config.apiKey.isNullOrEmpty()) {
-            echo("API key is required. Please run 'settings' to configure.")
+        val apiKey = config.getApiKey(config.providerType)
+        if (apiKey.isNullOrEmpty()) {
+            echo("API key is required for provider '${config.providerType}'. Please run 'settings' to configure.")
             return@runBlocking
         }
 
@@ -498,15 +505,17 @@ class PR : CliktCommand(
             echo("Error occurred: ${e.message}", err = true)
         }
     }
-    
+
     private fun createAIConfig(config: UserConfig): Pair<AIProviderConfig, AIProviderType> {
         val locale = Locale.fromCode(config.locale ?: "en")
+        val apiKey = config.getApiKey(config.providerType) 
+            ?: throw IllegalStateException("No API key found for provider: ${config.providerType}")
         val aiConfig = when (config.providerType?.lowercase()) {
-            "claude" -> ClaudeConfig(apiKey = config.apiKey!!, modelName = config.modelName, locale = locale)
-            "perplexity" -> PerplexityConfig(apiKey = config.apiKey!!, modelName = config.modelName, locale = locale)
-            "deepseek" -> DeepSeekConfig(apiKey = config.apiKey!!, modelName = config.modelName, locale = locale)
-            "gemini" -> GeminiConfig(apiKey = config.apiKey!!, modelName = config.modelName, locale = locale)
-            else -> OpenAIConfig(apiKey = config.apiKey!!, modelName = config.modelName, locale = locale)
+            "claude" -> ClaudeConfig(apiKey = apiKey, modelName = config.modelName, locale = locale)
+            "perplexity" -> PerplexityConfig(apiKey = apiKey, modelName = config.modelName, locale = locale)
+            "deepseek" -> DeepSeekConfig(apiKey = apiKey, modelName = config.modelName, locale = locale)
+            "gemini" -> GeminiConfig(apiKey = apiKey, modelName = config.modelName, locale = locale)
+            else -> OpenAIConfig(apiKey = apiKey, modelName = config.modelName, locale = locale)
         }
         
         val provider = when (config.providerType?.lowercase()) {
@@ -531,7 +540,7 @@ class CommitChronicle : CliktCommand(
         if (currentContext.invokedSubcommand == null) {
             val config = UserConfig.load()
 
-            if (config.apiKey.isNullOrEmpty() || config.providerType.isNullOrEmpty()) {
+            if (config.getApiKey(config.providerType).isNullOrEmpty() || config.providerType.isNullOrEmpty()) {
                 echo("First-time setup detected.")
                 InteractiveSetup().run()
                 return

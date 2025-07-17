@@ -7,7 +7,7 @@ import com.commitchronicle.language.Locale
 
 @Serializable
 data class UserConfig(
-    val apiKey: String? = null,
+    val apiKeys: Map<String, String> = emptyMap(),
     val providerType: String? = null,
     val modelName: String? = null,
     val locale: String? = null,
@@ -15,6 +15,16 @@ data class UserConfig(
     val defaultLimit: Int = 50
 ) {
     fun getLocale(): Locale? = locale?.let { Locale.fromCode(it) }
+
+    fun getApiKey(providerType: String?): String? {
+        return if (providerType != null) apiKeys[providerType] else null
+    }
+
+    fun withApiKey(providerType: String, apiKey: String): UserConfig {
+        val updatedApiKeys = this.apiKeys.toMutableMap()
+        updatedApiKeys[providerType] = apiKey
+        return this.copy(apiKeys = updatedApiKeys)
+    }
 
     companion object {
         private val configDir = File(System.getProperty("user.home"), ".commit-chronicle")

@@ -34,7 +34,13 @@ repositories {
 }
 
 dependencies {
+    // 特定のバージョンを使用
     implementation("com.github.hj4645:commit-chronicle:1.0.0")
+    
+    // または最新バージョンを自動で使用
+    implementation("com.github.hj4645:commit-chronicle")  // 最新リリース
+    // または
+    implementation("com.github.hj4645:commit-chronicle:latest")  // 最新リリース
 }
 ```
 
@@ -49,10 +55,18 @@ dependencies {
 </repositories>
 
 <dependencies>
+    <!-- 特定のバージョンを使用 -->
     <dependency>
         <groupId>com.github.hj4645</groupId>
         <artifactId>commit-chronicle</artifactId>
         <version>1.0.0</version>
+    </dependency>
+    
+    <!-- または最新バージョンを自動で使用 -->
+    <dependency>
+        <groupId>com.github.hj4645</groupId>
+        <artifactId>commit-chronicle</artifactId>
+        <version>latest</version>  <!-- 最新リリース -->
     </dependency>
 </dependencies>
 ```
@@ -68,11 +82,11 @@ dependencies {
 **macOS/Linux:**
 ```bash
 # ワンライナーでエイリアス設定
-echo "alias cch=\"java -jar \$(find ~/.gradle/caches -name \"*commit-chronicle*\" -type f | grep \"\.jar$\" | head -1)\"" >> ~/.zshrc && source ~/.zshrc
+echo "alias cch='java -jar \$(find ~/.gradle/caches -name \"*commit-chronicle*\" -type f | grep \"\\.jar\$\" | head -1)'" >> ~/.zshrc && source ~/.zshrc
 
 # またはステップ別設定
 JAR_PATH=$(find ~/.gradle/caches -name "*commit-chronicle*" -type f | grep "\.jar$" | head -1)
-echo "alias cch=\"java -jar $JAR_PATH\"" >> ~/.zshrc
+echo "alias cch='java -jar $JAR_PATH'" >> ~/.zshrc
 source ~/.zshrc
 ```
 

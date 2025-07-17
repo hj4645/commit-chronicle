@@ -34,7 +34,13 @@ repositories {
 }
 
 dependencies {
+    // 특정 버전 사용
     implementation("com.github.hj4645:commit-chronicle:1.0.0")
+    
+    // 또는 최신 버전 자동 사용
+    implementation("com.github.hj4645:commit-chronicle")  // 최신 릴리스
+    // 또는
+    implementation("com.github.hj4645:commit-chronicle:latest")  // 최신 릴리스
 }
 ```
 
@@ -49,10 +55,18 @@ dependencies {
 </repositories>
 
 <dependencies>
+    <!-- 특정 버전 사용 -->
     <dependency>
         <groupId>com.github.hj4645</groupId>
         <artifactId>commit-chronicle</artifactId>
         <version>1.0.0</version>
+    </dependency>
+    
+    <!-- 또는 최신 버전 자동 사용 -->
+    <dependency>
+        <groupId>com.github.hj4645</groupId>
+        <artifactId>commit-chronicle</artifactId>
+        <version>latest</version>  <!-- 최신 릴리스 -->
     </dependency>
 </dependencies>
 ```
@@ -68,11 +82,11 @@ dependencies {
 **macOS/Linux:**
 ```bash
 # 한 번에 alias 설정하기
-echo "alias cch=\"java -jar \$(find ~/.gradle/caches -name \"*commit-chronicle*\" -type f | grep \"\.jar$\" | head -1)\"" >> ~/.zshrc && source ~/.zshrc
+echo "alias cch='java -jar \$(find ~/.gradle/caches -name \"*commit-chronicle*\" -type f | grep \"\\.jar\$\" | head -1)'" >> ~/.zshrc && source ~/.zshrc
 
 # 또는 단계별로 설정
 JAR_PATH=$(find ~/.gradle/caches -name "*commit-chronicle*" -type f | grep "\.jar$" | head -1)
-echo "alias cch=\"java -jar $JAR_PATH\"" >> ~/.zshrc
+echo "alias cch='java -jar $JAR_PATH'" >> ~/.zshrc
 source ~/.zshrc
 ```
 

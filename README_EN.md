@@ -34,7 +34,13 @@ repositories {
 }
 
 dependencies {
+    // Use specific version
     implementation("com.github.hj4645:commit-chronicle:1.0.0")
+    
+    // Or use latest version automatically
+    implementation("com.github.hj4645:commit-chronicle")  // Latest release
+    // Or
+    implementation("com.github.hj4645:commit-chronicle:latest")  // Latest release
 }
 ```
 
@@ -49,10 +55,18 @@ dependencies {
 </repositories>
 
 <dependencies>
+    <!-- Use specific version -->
     <dependency>
         <groupId>com.github.hj4645</groupId>
         <artifactId>commit-chronicle</artifactId>
         <version>1.0.0</version>
+    </dependency>
+    
+    <!-- Or use latest version automatically -->
+    <dependency>
+        <groupId>com.github.hj4645</groupId>
+        <artifactId>commit-chronicle</artifactId>
+        <version>latest</version>  <!-- Latest release -->
     </dependency>
 </dependencies>
 ```
@@ -68,11 +82,11 @@ After adding the library as a dependency, you can set up an alias to use it as C
 **macOS/Linux:**
 ```bash
 # One-liner alias setup
-echo "alias cch=\"java -jar \$(find ~/.gradle/caches -name \"*commit-chronicle*\" -type f | grep \"\.jar$\" | head -1)\"" >> ~/.zshrc && source ~/.zshrc
+echo "alias cch='java -jar \$(find ~/.gradle/caches -name \"*commit-chronicle*\" -type f | grep \"\\.jar\$\" | head -1)'" >> ~/.zshrc && source ~/.zshrc
 
 # Or step-by-step setup
 JAR_PATH=$(find ~/.gradle/caches -name "*commit-chronicle*" -type f | grep "\.jar$" | head -1)
-echo "alias cch=\"java -jar $JAR_PATH\"" >> ~/.zshrc
+echo "alias cch='java -jar $JAR_PATH'" >> ~/.zshrc
 source ~/.zshrc
 ```
 
