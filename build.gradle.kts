@@ -13,7 +13,6 @@ fun getProjectVersion(): String {
             .start()
         
         if (process.waitFor() == 0) {
-            // 정확한 태그가 있는 경우 (v1.0.0 → 1.0.0)
             process.inputStream.bufferedReader().readText().trim().removePrefix("v")
         } else {
             // 태그가 없는 경우 SNAPSHOT
